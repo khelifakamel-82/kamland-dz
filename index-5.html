@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kamland DZ — Boutique</title>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:#f5f5f5;color:#111}
+header{background:#151515;color:#fff;padding:22px 18px;text-align:center;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:30px} header p{margin:7px 0 0;color:#ddd}
+main{max-width:950px;margin:22px auto;padding:0 14px}
+.welcome,.card{background:#fff;border-radius:20px;box-shadow:0 4px 18px #0001;overflow:hidden}
+.welcome{text-align:center;padding:24px 18px;margin-bottom:24px}.welcome h2{margin:0 0 10px;font-size:28px}
+.badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:18px 0}
+.badges span{padding:10px 14px;border:1px solid #bdebd5;border-radius:25px;background:#f0fff8}
+.grid{display:grid;grid-template-columns:1fr;gap:22px}.card img{width:100%;height:330px;object-fit:cover;background:#eee}
+.info{padding:18px}.ref{color:#666;font-size:14px}.price{font-size:27px;font-weight:700;margin:8px 0 12px}
+.sizes span{display:inline-block;border:1px solid #ccc;border-radius:8px;padding:8px 11px;margin:4px}
+button{width:100%;padding:14px;border:0;border-radius:10px;background:#111;color:#fff;font-size:17px;cursor:pointer;margin-top:14px}
+.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;padding:15px;z-index:10}
+.box{background:#fff;border-radius:16px;padding:22px;max-width:480px;width:100%;max-height:90vh;overflow:auto}
+input,select{width:100%;padding:12px;margin:7px 0 12px;border:1px solid #ccc;border-radius:8px}
+.close{background:#ddd;color:#111}
+footer{text-align:center;color:#666;padding:25px}
+@media(min-width:700px){.grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header><h1>KAMLAND DZ</h1><p>Chaussures • Baskets • Parfums</p></header>
+<main>
+<section class="welcome">
+<h2>Bienvenue chez Kamland DZ 🇩🇿</h2>
+<p>Découvrez nos produits et commandez simplement en quelques clics.</p>
+<div class="badges"><span>🚚 Livraison 58 wilayas</span><span>💵 Paiement à la livraison</span></div>
+</section>
+
+<section class="grid">
+<article class="card">
+<img src="adidas_ultrabounce.jpg" alt="Adidas Ultrabounce">
+<div class="info"><div class="ref">Référence : HP5772</div><h2>Adidas Ultrabounce</h2>
+<div class="price">14 500 DA</div><p>Modèle sportif, moderne et confortable.</p>
+<b>Pointures :</b><div class="sizes"><span>42</span><span>43</span><span>44</span><span>45</span></div>
+<button onclick="openForm('Adidas Ultrabounce','HP5772','14500','42, 43, 44, 45')">Commander maintenant</button></div>
+</article>
+
+<article class="card">
+<img src="nike_rouge.jpg" alt="Nike rouge">
+<div class="info"><div class="ref">Référence : NIKE-001</div><h2>Nike rouge</h2>
+<div class="price">10 000 DA</div><p>Basket sportive au style moderne.</p>
+<b>Pointures :</b><div class="sizes"><span>36</span><span>37.5</span><span>38</span><span>40</span></div>
+<button onclick="openForm('Nike rouge','NIKE-001','10000','36, 37.5, 38, 40')">Commander maintenant</button></div>
+</article>
+
+<article class="card">
+<img src="adidas_montante.jpg" alt="Adidas montante">
+<div class="info"><div class="ref">Référence : ADIDAS-002</div><h2>Adidas montante</h2>
+<div class="price">8 900 DA</div><p>Modèle montante, confortable et tendance.</p>
+<b>Pointures :</b><div class="sizes"><span>41</span><span>42</span></div>
+<button onclick="openForm('Adidas montante','ADIDAS-002','8900','41, 42')">Commander maintenant</button></div>
+</article>
+
+<article class="card">
+<img src="reebok_jaune.jpg" alt="Reebok jaune">
+<div class="info"><div class="ref">Référence : REEBOK-001</div><h2>Reebok jaune</h2>
+<div class="price">8 900 DA</div><p>Basket colorée, légère et confortable.</p>
+<b>Pointures :</b><div class="sizes"><span>40.5</span><span>41</span><span>42</span></div>
+<button onclick="openForm('Reebok jaune','REEBOK-001','8900','40.5, 41, 42')">Commander maintenant</button></div>
+</article>
+</section>
+</main>
+
+<div class="modal" id="modal"><div class="box">
+<h2>Passer commande</h2><form onsubmit="sendOrder(event)">
+<input id="name" placeholder="Nom et prénom" required>
+<input id="phone" placeholder="Numéro de téléphone" required>
+<select id="size" required><option value="">Choisir la pointure</option></select>
+<input id="wilaya" placeholder="Wilaya" required>
+<input id="commune" placeholder="Commune" required>
+<button type="submit">Envoyer la commande sur WhatsApp</button>
+<button type="button" class="close" onclick="closeForm()">Annuler</button>
+</form></div></div>
+
+<script>
+let product='',ref='',price='',available='';
+function openForm(p,r,pr,sizes){
+ product=p;ref=r;price=pr;available=sizes;
+ const sel=document.getElementById('size');
+ sel.innerHTML='<option value="">Choisir la pointure</option>'+sizes.split(', ').map(s=>'<option>'+s+'</option>').join('');
+ document.getElementById('modal').style.display='flex';
+}
+function closeForm(){document.getElementById('modal').style.display='none'}
+function sendOrder(e){
+ e.preventDefault();
+ const name=document.getElementById('name').value, phone=document.getElementById('phone').value,
+ size=document.getElementById('size').value, wilaya=document.getElementById('wilaya').value,
+ commune=document.getElementById('commune').value;
+ const text=`Bonjour Kamland DZ 👋\n\nJe souhaite commander :\nProduit : ${product}\nRéférence : ${ref}\nPrix : ${Number(price).toLocaleString('fr-FR')} DA\nPointure : ${size}\nNom : ${name}\nTéléphone : ${phone}\nWilaya : ${wilaya}\nCommune : ${commune}`;
+ window.location.href='https://wa.me/213667484678?text='+encodeURIComponent(text);
+}
+</script>
+<footer>© 2026 Kamland DZ — Votre style, votre choix.</footer>
+</body>
+</html>
