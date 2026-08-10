@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kamland DZ — Boutique</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f6f8;color:#171717}
+header{background:#111;color:#fff;position:sticky;top:0;z-index:20;box-shadow:0 3px 15px #0002}
+.nav{max-width:1100px;margin:auto;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-size:24px;font-weight:900;letter-spacing:.5px}
+.logo span{color:#ff5b35}
+.nav button{background:#ff5b35;color:#fff;border:0;border-radius:12px;padding:11px 14px;font-weight:800}
+.hero{background:linear-gradient(135deg,#111 0%,#292929 55%,#ff5b35 100%);color:#fff;padding:42px 18px}
+.hero-inner{max-width:1100px;margin:auto}
+.hero h1{font-size:40px;margin:0 0 10px}
+.hero p{font-size:17px;line-height:1.5;margin:0 0 20px;color:#eee}
+.badges{display:flex;flex-wrap:wrap;gap:9px}
+.badge{background:#ffffff18;border:1px solid #ffffff30;padding:9px 12px;border-radius:999px;font-size:13px}
+.tools{max-width:1100px;margin:22px auto 0;padding:0 18px;display:flex;gap:10px;flex-wrap:wrap}
+.search{flex:1;min-width:220px;padding:14px 16px;border:1px solid #ddd;border-radius:12px;font-size:15px}
+.select{padding:14px;border:1px solid #ddd;border-radius:12px;background:#fff}
+.grid{max-width:1100px;margin:18px auto;padding:0 18px 40px;display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:18px}
+.card{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 5px 20px #00000012;border:1px solid #eee;display:flex;flex-direction:column}
+.card img{width:100%;height:245px;object-fit:cover;background:#fff}
+.info{padding:16px}
+.ref{font-size:12px;color:#777}
+.card h2{font-size:19px;margin:6px 0}
+.desc{font-size:13px;color:#666;min-height:38px}
+.price{font-size:23px;font-weight:900;margin:10px 0}
+.sizes{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 14px}
+.size{background:#f0f1f3;border-radius:8px;padding:7px 9px;font-size:12px;font-weight:700}
+.order{width:100%;padding:13px;border:0;border-radius:11px;background:#111;color:#fff;font-weight:800;font-size:15px}
+.order:hover{background:#ff5b35}
+.cartbar{max-width:1100px;margin:0 auto 20px;padding:0 18px}
+.cart{background:#fff;border-radius:16px;padding:15px;box-shadow:0 4px 18px #0001;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.cart strong{font-size:16px}
+.cart button{background:#25d366;color:#fff;border:0;border-radius:11px;padding:11px 14px;font-weight:800}
+.modal{display:none;position:fixed;inset:0;background:#0009;z-index:50;align-items:center;justify-content:center;padding:16px}
+.modal.show{display:flex}
+.box{background:#fff;border-radius:18px;max-width:500px;width:100%;padding:20px;max-height:90vh;overflow:auto}
+.box h2{margin-top:0}
+.field{margin:10px 0}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:15px}
+.actions{display:flex;gap:8px;margin-top:15px}
+.actions button{flex:1;padding:12px;border:0;border-radius:10px;font-weight:800}
+.cancel{background:#eee}.send{background:#25d366;color:#fff}
+footer{background:#111;color:#ddd;text-align:center;padding:28px 18px;font-size:13px}
+.empty{grid-column:1/-1;text-align:center;padding:35px;color:#777}
+@media(max-width:600px){.hero h1{font-size:31px}.card img{height:220px}.nav{padding:12px 14px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="logo">KAMLAND <span>DZ</span></div>
+    <button onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})">Commander</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <h1>Chaussures & Sneakers</h1>
+    <p>Découvrez notre sélection Kamland DZ. Choisissez votre modèle, votre pointure et commandez facilement.</p>
+    <div class="badges">
+      <div class="badge">🚚 Livraison en Algérie</div>
+      <div class="badge">💵 Paiement à la livraison</div>
+      <div class="badge">📱 Commande WhatsApp</div>
+    </div>
+  </div>
+</section>
+
+<div class="tools">
+  <input id="search" class="search" placeholder="🔎 Rechercher un modèle..." oninput="render()">
+  <select id="category" class="select" onchange="render()">
+    <option value="all">Toutes les catégories</option>
+    <option value="Nike">Nike</option>
+    <option value="Adidas">Adidas</option>
+    <option value="Reebok">Reebok</option>
+  </select>
+</div>
+
+<div class="grid" id="products"></div>
+
+<div class="cartbar">
+  <div class="cart">
+    <strong>🛒 <span id="cartCount">0</span> article(s) sélectionné(s)</strong>
+    <button onclick="openCart()">Voir la commande</button>
+  </div>
+</div>
+
+<footer>
+  <strong>KAMLAND DZ</strong><br>
+  Sneakers • Chaussures • Livraison • Paiement à la livraison
+</footer>
+
+<div class="modal" id="modal">
+  <div class="box">
+    <h2>🛍️ Finaliser la commande</h2>
+    <div id="summary"></div>
+    <div class="field"><label>Nom et prénom</label><input id="name" required></div>
+    <div class="field"><label>Numéro de téléphone</label><input id="phone" inputmode="tel" required></div>
+    <div class="field"><label>Wilaya</label>
+      <select id="wilaya" required>
+        <option value="">Choisir la wilaya</option>
+      </select>
+    </div>
+    <div class="field"><label>Adresse / commune</label><textarea id="address" rows="3" placeholder="Votre adresse de livraison"></textarea></div>
+    <div class="actions">
+      <button class="cancel" onclick="closeModal()">Annuler</button>
+      <button class="send" onclick="sendWhatsApp()">Commander sur WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const products=[
+ {id:1,brand:"Adidas",name:"Adidas Ultraboounce HP5772",ref:"HP5772",price:14500,sizes:["42","43","44","45"],img:"adidas_ultrabounce.jpg",desc:"Sneaker Adidas homme, confortable et sportive."},
+ {id:2,brand:"Nike",name:"Nike Rouge",ref:"NIKE-001",price:10000,sizes:["36","37.5","38","40"],img:"nike_rouge.jpg",desc:"Basket sportive au style moderne."},
+ {id:3,brand:"Adidas",name:"Adidas Montante",ref:"ADIDAS-002",price:9000,sizes:["41","42"],img:"adidas_montante.jpg",desc:"Basket montante, confortable et tendance."},
+ {id:4,brand:"Reebok",name:"Reebok Club C Coast Collegiate Gold",ref:"REEBOK-001",price:8900,sizes:["40.5","41","42"],img:"reebok_jaune.jpg",desc:"Sneakers Reebok au coloris Gold."}
+];
+
+let selected=[];
+let currentProduct=null;
+
+function money(n){return n.toLocaleString("fr-FR")+" DA"}
+
+function render(){
+ const q=document.getElementById("search").value.toLowerCase();
+ const cat=document.getElementById("category").value;
+ const list=products.filter(p=>(cat==="all"||p.brand===cat)&&
+   (p.name.toLowerCase().includes(q)||p.ref.toLowerCase().includes(q)));
+ const el=document.getElementById("products");
+ if(!list.length){el.innerHTML='<div class="empty">Aucun produit trouvé.</div>';return}
+ el.innerHTML=list.map(p=>`
+  <article class="card">
+    <img src="${p.img}" alt="${p.name}" onerror="this.style.display='none'">
+    <div class="info">
+      <div class="ref">${p.brand} • Réf. ${p.ref}</div>
+      <h2>${p.name}</h2>
+      <div class="desc">${p.desc}</div>
+      <div class="price">${money(p.price)}</div>
+      <div class="sizes">${p.sizes.map(s=>`<span class="size">${s}</span>`).join("")}</div>
+      <button class="order" onclick="choose(${p.id})">Choisir une pointure</button>
+    </div>
+  </article>`).join("");
+}
+
+function choose(id){
+ currentProduct=products.find(p=>p.id===id);
+ const size=prompt("Choisissez une pointure : "+currentProduct.sizes.join(" / "));
+ if(size===null)return;
+ if(!currentProduct.sizes.includes(size)){alert("Pointure indisponible. Choisissez : "+currentProduct.sizes.join(" / "));return}
+ selected=[{...currentProduct,size}];
+ updateCart();
+ openCart();
+}
+
+function updateCart(){
+ document.getElementById("cartCount").textContent=selected.length;
+}
+
+function openCart(){
+ if(!selected.length){alert("Sélectionnez d'abord un produit.");return}
+ const p=selected[selected.length-1];
+ document.getElementById("summary").innerHTML=
+ `<div style="background:#f5f6f8;padding:12px;border-radius:10px;margin-bottom:12px">
+ <strong>${p.name}</strong><br>Pointure : ${p.size}<br>Prix : <strong>${money(p.price)}</strong>
+ </div>`;
+ document.getElementById("modal").classList.add("show");
+}
+
+function closeModal(){document.getElementById("modal").classList.remove("show")}
+
+const wilayas=["Adrar","Chlef","Laghouat","Oum El Bouaghi","Batna","Béjaïa","Biskra","Béchar","Blida","Bouira","Tamanrasset","Tébessa","Tlemcen","Tiaret","Tizi Ouzou","Alger","Djelfa","Jijel","Sétif","Saïda","Skikda","Sidi Bel Abbès","Annaba","Guelma","Constantine","Médéa","Mostaganem","M'Sila","Mascara","Ouargla","Oran","El Bayadh","Illizi","Bordj Bou Arréridj","Boumerdès","El Tarf","Tindouf","Tissemsilt","El Oued","Khenchela","Souk Ahras","Tipaza","Mila","Aïn Defla","Naâma","Aïn Témouchent","Ghardaïa","Relizane","Timimoun","Bordj Badji Mokhtar","Ouled Djellal","Béni Abbès","In Salah","In Guezzam","Touggourt","Djanet","El M'Ghair","El Meniaa"];
+document.getElementById("wilaya").innerHTML += wilayas.map(w=>`<option>${w}</option>`).join("");
+
+function sendWhatsApp(){
+ const p=selected[selected.length-1];
+ const name=document.getElementById("name").value.trim();
+ const phone=document.getElementById("phone").value.trim();
+ const wilaya=document.getElementById("wilaya").value;
+ const address=document.getElementById("address").value.trim();
+ if(!name||!phone||!wilaya){alert("Veuillez remplir le nom, le téléphone et la wilaya.");return}
+ const text=`Bonjour Kamland DZ 👋%0A%0AJe souhaite commander :%0A👟 ${encodeURIComponent(p.name)}%0A📏 Pointure : ${encodeURIComponent(p.size)}%0A💰 Prix : ${p.price} DA%0A%0A👤 Nom : ${encodeURIComponent(name)}%0A📞 Téléphone : ${encodeURIComponent(phone)}%0A📍 Wilaya : ${encodeURIComponent(wilaya)}%0A🏠 Adresse : ${encodeURIComponent(address||"À préciser")}%0A%0A💵 Paiement à la livraison`;
+ window.open("https://wa.me/213667484678?text="+text,"_blank");
+}
+render();
+</script>
+</body>
+</html>
