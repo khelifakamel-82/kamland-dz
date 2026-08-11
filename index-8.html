@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KAMLAND DZ — Baskets & Sneakers</title>
+<meta name="description" content="KAMLAND DZ — baskets et sneakers. Commande WhatsApp.">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f6f8;color:#171717}
+header{background:#111;color:#fff;position:sticky;top:0;z-index:20}.nav{max-width:1100px;margin:auto;padding:9px 15px;display:flex;align-items:center;gap:11px}
+.logo{width:52px;height:52px;object-fit:contain;border-radius:50%;background:#fff}.brand{font-size:20px;font-weight:900}.brand small{display:block;color:#aaa;font-size:11px}
+.wa{margin-left:auto;text-decoration:none;background:#25d366;color:#fff;font-weight:800;padding:10px 13px;border-radius:10px}
+.hero{background:linear-gradient(135deg,#101010,#2b2b2b 60%,#ff5b35);color:#fff;padding:38px 15px}.heroIn{max-width:1100px;margin:auto}.hero h1{font-size:39px;margin:0 0 10px}.hero p{max-width:650px;line-height:1.55;color:#eee}
+.badges{display:flex;flex-wrap:wrap;gap:8px}.badge{padding:8px 11px;border:1px solid #ffffff44;border-radius:30px;font-size:13px}
+.tools{max-width:1100px;margin:20px auto 0;padding:0 15px;display:flex;gap:9px;flex-wrap:wrap}.tools input,.tools select{padding:12px;border:1px solid #ddd;border-radius:10px;background:white;font-size:15px}.search{flex:1;min-width:220px}
+.grid{max-width:1100px;margin:18px auto;padding:0 15px 35px;display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:18px}
+.card{background:#fff;border:1px solid #eee;border-radius:17px;overflow:hidden;box-shadow:0 5px 20px #00000012}.photo{width:100%;height:245px;object-fit:cover;display:block;background:#fff}
+.info{padding:15px}.ref{font-size:12px;color:#777}.info h2{font-size:18px;margin:6px 0}.desc{font-size:13px;color:#666;min-height:36px}.price{font-size:22px;font-weight:900;margin:9px 0}
+.sizes{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.size{padding:7px 9px;background:#f0f1f3;border-radius:8px;font-size:12px;font-weight:700}
+.order{width:100%;padding:12px;border:0;border-radius:10px;background:#111;color:#fff;font-weight:800;cursor:pointer}.order:hover{background:#ff5b35}
+.features{max-width:1100px;margin:0 auto 30px;padding:0 15px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.feature{background:#fff;border-radius:14px;padding:18px;text-align:center}.feature b{display:block;margin-bottom:5px}
+footer{background:#111;color:#ddd;text-align:center;padding:28px 15px}.modal{display:none;position:fixed;inset:0;background:#0009;z-index:50;align-items:center;justify-content:center;padding:15px}.modal.show{display:flex}
+.box{background:#fff;width:100%;max-width:500px;border-radius:17px;padding:20px;max-height:90vh;overflow:auto}.field{margin:10px 0}.field label{display:block;font-size:13px;font-weight:800;margin-bottom:5px}.field input,.field select,.field textarea{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;font:inherit}
+.actions{display:flex;gap:8px}.actions button{flex:1;padding:12px;border:0;border-radius:10px;font-weight:800}.cancel{background:#eee}.send{background:#25d366;color:white}
+@media(max-width:650px){.hero h1{font-size:30px}.features{grid-template-columns:1fr}.photo{height:220px}}
+</style>
+</head>
+<body>
+<header><div class="nav">
+<img class="logo" src="logo-kamland-dz.png" alt="Logo KAMLAND DZ">
+<div class="brand">KAMLAND DZ<small>Baskets & Sneakers</small></div>
+<a class="wa" href="https://wa.me/213667484678" target="_blank">WhatsApp</a>
+</div></header>
+
+<section class="hero"><div class="heroIn">
+<h1>Ton style. Ton choix.</h1>
+<p>Découvrez notre sélection de baskets et sneakers. Choisissez votre pointure et commandez directement sur WhatsApp.</p>
+<div class="badges"><span class="badge">🇩🇿 Livraison 58 wilayas</span><span class="badge">💵 Paiement à la livraison</span><span class="badge">📱 Commande WhatsApp</span></div>
+</div></section>
+
+<div class="tools">
+<input id="search" class="search" placeholder="🔎 Rechercher un modèle..." oninput="render()">
+<select id="brand" onchange="render()"><option value="">Toutes les catégories</option><option>Adidas</option><option>Nike</option><option>Reebok</option></select>
+<select id="size" onchange="render()"><option value="">Toutes les pointures</option><option>36</option><option>37.7</option><option>38</option><option>40</option><option>40.5</option><option>41</option><option>42</option><option>43</option><option>44</option><option>45</option></select>
+</div>
+
+<main id="products" class="grid"></main>
+
+<div class="features">
+<div class="feature">🚚<b>Livraison</b>58 wilayas</div>
+<div class="feature">💵<b>Paiement</b>À la livraison</div>
+<div class="feature">💬<b>Commande</b>WhatsApp</div>
+</div>
+<footer><b>KAMLAND DZ</b><br>📞 0667 484 678</footer>
+
+<div id="modal" class="modal"><div class="box">
+<h2>Commander</h2><div id="summary"></div>
+<div class="field"><label>Nom et prénom</label><input id="name"></div>
+<div class="field"><label>Téléphone</label><input id="phone"></div>
+<div class="field"><label>Wilaya</label><select id="wilaya"><option value="">Choisir la wilaya</option></select></div>
+<div class="field"><label>Commune / adresse</label><textarea id="address" rows="3"></textarea></div>
+<div class="field"><label>Pointure</label><select id="chosenSize"></select></div>
+<div class="actions"><button class="cancel" onclick="closeModal()">Annuler</button><button class="send" onclick="sendOrder()">Commander WhatsApp</button></div>
+</div></div>
+
+<script>
+const products=[
+{brand:"Adidas",name:"Adidas Ultraboounce HP5772",ref:"HP5772",price:14500,sizes:["42","43","44","45"],img:"adidas_ultrabounce.jpg",desc:"Sneaker Adidas homme, confortable et sportive."},
+{brand:"Adidas",name:"Adidas Sneakers Homme",price:9000,sizes:["41","42"],img:"adidas_montante.jpg",desc:"Sneaker Adidas homme, style moderne."},
+{brand:"Nike",name:"Nike Rouge",price:10000,sizes:["36","37.7","38","40"],img:"nike_rouge.jpg",desc:"Basket Nike au style sportif."},
+{brand:"Reebok",name:"Reebok Club C Coast Collegiate Gold",price:8900,sizes:["40.5","41","42"],img:"reebok_jaune.jpg",desc:"Sneakers Reebok Club C au coloris Gold."}
+];
+let selected=null;
+function money(n){return n.toLocaleString("fr-FR")+" DA"}
+function render(){
+ const q=document.getElementById("search").value.toLowerCase(),b=document.getElementById("brand").value,s=document.getElementById("size").value;
+ const list=products.filter(p=>(!b||p.brand===b)&&(!s||p.sizes.includes(s))&&(!q||(p.name+" "+p.brand+" "+(p.ref||"")).toLowerCase().includes(q)));
+ document.getElementById("products").innerHTML=list.length?list.map(p=>`
+ <article class="card">
+   <img class="photo" src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src='https://github.com/khelifakamel-82/kamland-dz/raw/refs/heads/main/${p.img}'">
+   <div class="info"><div class="ref">${p.brand}${p.ref?" • Réf. "+p.ref:""}</div>
+   <h2>${p.name}</h2><div class="desc">${p.desc}</div><div class="price">${money(p.price)}</div>
+   <div class="sizes">${p.sizes.map(x=>`<span class="size">${x}</span>`).join("")}</div>
+   <button class="order" onclick="openOrder(${products.indexOf(p)})">Choisir une pointure</button></div>
+ </article>`).join(""):"<div style='grid-column:1/-1;text-align:center;padding:35px'>Aucun produit trouvé.</div>";
+}
+function openOrder(i){selected=products[i];document.getElementById("summary").innerHTML="<p><b>"+selected.name+"</b><br>"+money(selected.price)+"</p>";document.getElementById("chosenSize").innerHTML=selected.sizes.map(s=>`<option>${s}</option>`).join("");document.getElementById("modal").classList.add("show")}
+function closeModal(){document.getElementById("modal").classList.remove("show")}
+function sendOrder(){
+ const n=document.getElementById("name").value.trim(),t=document.getElementById("phone").value.trim(),w=document.getElementById("wilaya").value,a=document.getElementById("address").value.trim(),s=document.getElementById("chosenSize").value;
+ if(!n||!t||!w){alert("Veuillez remplir le nom, le téléphone et la wilaya.");return}
+ const m=`Bonjour Kamland DZ 👋%0AJe souhaite commander : ${encodeURIComponent(selected.name)}%0APrix : ${selected.price} DA%0APointure : ${encodeURIComponent(s)}%0ANom : ${encodeURIComponent(n)}%0ATéléphone : ${encodeURIComponent(t)}%0AWilaya : ${encodeURIComponent(w)}%0AAdresse : ${encodeURIComponent(a||"À préciser")}%0APaiement à la livraison`;
+ window.open("https://wa.me/213667484678?text="+m,"_blank");
+}
+const wilayas=["Adrar","Chlef","Laghouat","Oum El Bouaghi","Batna","Béjaïa","Biskra","Béchar","Blida","Bouira","Tamanrasset","Tébessa","Tlemcen","Tiaret","Tizi Ouzou","Alger","Djelfa","Jijel","Sétif","Saïda","Skikda","Sidi Bel Abbès","Annaba","Guelma","Constantine","Médéa","Mostaganem","M'Sila","Mascara","Ouargla","Oran","El Bayadh","Illizi","Bordj Bou Arréridj","Boumerdès","El Tarf","Tindouf","Tissemsilt","El Oued","Khenchela","Souk Ahras","Tipaza","Mila","Aïn Defla","Naâma","Aïn Témouchent","Ghardaïa","Relizane","Timimoun","Bordj Badji Mokhtar","Ouled Djellal","Béni Abbès","In Salah","In Guezzam","Touggourt","Djanet","El M'Ghair","El Meniaa"];
+document.getElementById("wilaya").innerHTML+=wilayas.map(w=>`<option>${w}</option>`).join("");
+render();
+</script>
+</body></html>
