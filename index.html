@@ -65,11 +65,10 @@ footer{background:#111;color:#ddd;text-align:center;padding:28px 15px}.modal{dis
 
 <script>
 const products=[
-{brand:"Adidas",name:"Adidas Ultraboounce HP5772",ref:"HP5772",price:14500,sizes:["42","43","44","45"],img:"adidas_ultrabounce.jpg",desc:"Sneaker Adidas homme, confortable et sportive."},
-{brand:"Adidas",name:"Adidas Sneakers Homme",price:9000,sizes:["41","42"],img:"adidas_montante.jpg",desc:"Sneaker Adidas homme, style moderne."},
-{brand:"Nike",name:"Nike Rouge",price:10000,sizes:["36","37.7","38","40"],img:"nike_rouge.jpg",desc:"Basket Nike au style sportif."},
-{brand:"Reebok",name:"Reebok Club C Coast Collegiate Gold",price:8900,sizes:["40.5","41","42"],img:"reebok_jaune.jpg",desc:"Sneakers Reebok Club C au coloris Gold."}
-];
+{name:"Adidas Ultraboounce HP5772",brand:"Adidas",ref:"HP5772",price:14500,sizes:["42","43","44","45"],img:"https://khelifakamel-82.github.io/kamland-dz/adidas_ultrabounce.jpg",desc:"Sneaker Adidas homme, confortable et sportive."},
+{name:"Adidas Sneakers Homme",brand:"Adidas",price:9000,sizes:["41","42"],img:"https://khelifakamel-82.github.io/kamland-dz/adidas_montante.jpg",desc:"Basket Adidas homme."},
+{name:"Nike Rouge",brand:"Nike",price:10000,sizes:["36","37.7","38","40"],img:"https://khelifakamel-82.github.io/kamland-dz/nike_rouge.jpg",desc:"Basket Nike au style sportif."},
+{name:"Reebok Club C Coast Collegiate Gold",brand:"Reebok",price:8900,sizes:["40.5","41","42"],img:"https://khelifakamel-82.github.io/kamland-dz/reebok_jaune.jpg",desc:"Reebok Club C homme."}
 let selected=null;
 function money(n){return n.toLocaleString("fr-FR")+" DA"}
 function render(){
@@ -77,7 +76,11 @@ function render(){
  const list=products.filter(p=>(!b||p.brand===b)&&(!s||p.sizes.includes(s))&&(!q||(p.name+" "+p.brand+" "+(p.ref||"")).toLowerCase().includes(q)));
  document.getElementById("products").innerHTML=list.length?list.map(p=>`
  <article class="card">
-   <img class="photo" src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src='https://github.com/khelifakamel-82/kamland-dz/raw/refs/heads/main/${p.img}'">
+<a href="${p.img}" target="_blank">
+<img class="photo" src="${p.img}" alt="${p.name}" loading="lazy">
+</a>
+  <img class="photo" src="${p.img}" alt="${p.name}" loading="lazy">
+</a>
    <div class="info"><div class="ref">${p.brand}${p.ref?" • Réf. "+p.ref:""}</div>
    <h2>${p.name}</h2><div class="desc">${p.desc}</div><div class="price">${money(p.price)}</div>
    <div class="sizes">${p.sizes.map(x=>`<span class="size">${x}</span>`).join("")}</div>
