@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KAMLAND DZ | Boutique</title>
+<style>
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;font-family:Arial,sans-serif;background:#f7f7f7;color:#161616}
+header{background:#111;color:#fff;border-bottom:2px solid #d8a928;position:sticky;top:0;z-index:20}
+.nav{max-width:1180px;margin:auto;padding:10px 16px;display:flex;align-items:center;gap:15px}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none}.logo{width:52px;height:52px;border-radius:50%;background:#d8a928;color:#111;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px}
+.brand b{font-size:20px}.brand small{display:block;color:#ddd}nav{margin-left:auto;display:flex;gap:14px}nav a{color:#fff;text-decoration:none;font-weight:bold;font-size:14px}
+.wa{background:#20c76a;color:#fff;padding:10px 13px;border-radius:9px;text-decoration:none;font-weight:bold}
+.hero{background:linear-gradient(135deg,#111,#292929);color:#fff}.hero-in{max-width:1180px;margin:auto;padding:45px 16px}
+.badges{display:flex;flex-wrap:wrap;gap:8px}.badge{border:1px solid #666;border-radius:30px;padding:8px 11px;font-size:13px}
+h1{font-size:48px;margin:18px 0 10px}.hero p{font-size:18px;color:#ddd}.cta{display:inline-block;background:#d8a928;color:#111;padding:13px 18px;border-radius:9px;font-weight:bold;text-decoration:none}
+.container{max-width:1180px;margin:auto;padding:30px 16px}h2{text-align:center;font-size:30px}.sub{text-align:center;color:#6b7280}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.toolbar input,.toolbar select{padding:12px;border:1px solid #ddd;border-radius:9px;background:#fff;flex:1;min-width:170px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}.card{background:#fff;border-radius:17px;overflow:hidden;box-shadow:0 5px 20px #0001}
+.pic{height:260px;background:#e9e9e9;display:flex;align-items:center;justify-content:center;cursor:zoom-in;overflow:hidden}
+.pic svg{width:100%;height:100%;display:block;transition:transform .25s}.pic:hover svg{transform:scale(1.04)}
+.body{padding:15px}.tag{font-size:12px;color:#777}.body h3{margin:6px 0}.price{font-size:21px;font-weight:900;margin:9px 0}.sizes{color:#555;font-size:14px;margin-bottom:12px}
+.btn{border:0;border-radius:9px;padding:11px;font-weight:bold;cursor:pointer;background:#20c76a;color:#fff;width:100%}
+.info{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.box{background:#fff;padding:20px;border-radius:15px;text-align:center}.box b{display:block;margin:7px}
+footer{background:#111;color:#fff;padding:30px 16px;margin-top:25px}.foot{max-width:1180px;margin:auto;text-align:center}
+.viewer{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:100;align-items:center;justify-content:center;padding:15px}
+.viewer.show{display:flex}.viewer-card{max-width:95vw;max-height:92vh;text-align:center}.viewer svg{width:min(90vw,700px);height:min(78vh,600px);display:block;border-radius:14px}
+.close{position:fixed;right:18px;top:15px;background:#fff;border:0;border-radius:50%;width:42px;height:42px;font-size:22px;font-weight:bold;cursor:pointer}
+.viewer-title{color:#fff;font-size:18px;font-weight:bold;margin-top:10px}
+.empty{display:none;text-align:center;padding:30px;color:#777}
+@media(max-width:800px){nav{display:none}h1{font-size:38px}.info{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="nav">
+<a class="brand" href="#accueil"><div class="logo">KZ</div><span><b>KAMLAND DZ</b><small>Baskets & Chaussures</small></span></a>
+<nav><a href="#accueil">Accueil</a><a href="#boutique">Boutique</a><a href="#nouveautes">Nouveautés</a><a href="#contact">Contact</a></nav>
+<a class="wa" href="https://wa.me/213667484678" target="_blank">WhatsApp</a>
+</div></header>
+
+<section class="hero" id="accueil"><div class="hero-in">
+<div class="badges"><span class="badge">🇩🇿 58 wilayas</span><span class="badge">💵 Paiement à la livraison</span><span class="badge">📱 Commande WhatsApp</span></div>
+<h1>Ton style.<br>Ton choix.</h1>
+<p>Découvrez notre sélection de baskets et sneakers. Choisissez votre pointure et commandez directement sur WhatsApp.</p>
+<a class="cta" href="#boutique">Voir la boutique</a>
+</div></section>
+
+<section class="container" id="boutique"><h2>Notre boutique</h2><p class="sub">Cliquez sur une photo pour l'agrandir.</p>
+<div class="toolbar"><input id="search" placeholder="🔎 Rechercher un modèle..." oninput="filterProducts()">
+<select id="brand" onchange="filterProducts()"><option value="">Toutes les marques</option><option>Adidas</option><option>Nike</option><option>Reebok</option></select></div>
+
+<div class="grid" id="productGrid">
+
+<article class="card" data-brand="Nike" data-name="Nike rouge noir">
+<div class="pic" onclick="openProduct('nike','Nike rouge/noir')">
+<svg viewBox="0 0 500 350" xmlns="http://www.w3.org/2000/svg"><rect width="500" height="350" fill="#e9e9e9"/><ellipse cx="250" cy="285" rx="175" ry="22" fill="#ccc"/><path d="M105 225c30-8 60-18 91-47l55-54 47 52c20 22 45 31 82 43 18 6 29 19 23 31H120c-22 0-29-16-15-25z" fill="#222"/><path d="M150 220c35-7 55-18 78-42l37-38 28 31c-28 17-55 36-89 49z" fill="#d71920"/><path d="M302 153l42 47 49 18" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/><path d="M122 250h275" stroke="#fff" stroke-width="18" stroke-linecap="round"/><text x="250" y="65" text-anchor="middle" font-family="Arial" font-size="24" font-weight="bold">NIKE</text></svg>
+</div><div class="body"><span class="tag">Nike</span><h3>Nike rouge/noir</h3><div class="price">10 000 DA</div><div class="sizes">Pointures : 36 • 37 • 38 • 40</div><button class="btn" onclick="order('Nike rouge/noir','10 000 DA')">Commander</button></div>
+</article>
+
+<article class="card" data-brand="Reebok" data-name="Reebok Club C Coast Collegiate Gold">
+<div class="pic" onclick="openProduct('reebok','Reebok Club C Coast Collegiate Gold')">
+<svg viewBox="0 0 500 350" xmlns="http://www.w3.org/2000/svg"><rect width="500" height="350" fill="#eee"/><ellipse cx="250" cy="285" rx="175" ry="22" fill="#ccc"/><path d="M105 225c30-8 60-18 91-47l55-54 47 52c20 22 45 31 82 43 18 6 29 19 23 31H120c-22 0-29-16-15-25z" fill="#f7f7f7" stroke="#bbb" stroke-width="3"/><path d="M145 224h205" stroke="#d6aa28" stroke-width="15"/><path d="M260 132l45 48" stroke="#d6aa28" stroke-width="9"/><circle cx="260" cy="128" r="20" fill="#d6aa28"/><text x="250" y="70" text-anchor="middle" font-family="Arial" font-size="21" font-weight="bold">REEBOK</text></svg>
+</div><div class="body"><span class="tag">Reebok</span><h3>Reebok Club C Coast Collegiate Gold</h3><div class="price">8 900 DA</div><div class="sizes">Pointures : 40.5 • 41 • 42</div><button class="btn" onclick="order('Reebok Club C Coast Collegiate Gold','8 900 DA')">Commander</button></div>
+</article>
+
+<article class="card" data-brand="Adidas" data-name="Adidas Ultraboost HP5772">
+<div class="pic" onclick="openProduct('ultra','Adidas Ultraboost HP5772')">
+<svg viewBox="0 0 500 350" xmlns="http://www.w3.org/2000/svg"><rect width="500" height="350" fill="#e8e8e8"/><ellipse cx="250" cy="285" rx="175" ry="22" fill="#ccc"/><path d="M105 225c30-8 60-18 91-47l55-54 47 52c20 22 45 31 82 43 18 6 29 19 23 31H120c-22 0-29-16-15-25z" fill="#fff" stroke="#aaa" stroke-width="3"/><path d="M180 195l55-55 40 45-45 32z" fill="#111"/><path d="M195 185l50-50M218 200l50-51M241 213l50-48" stroke="#fff" stroke-width="10"/><path d="M120 250h280" stroke="#222" stroke-width="17" stroke-linecap="round"/><text x="250" y="70" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold">ADIDAS</text></svg>
+</div><div class="body"><span class="tag">Adidas</span><h3>Adidas Ultraboost HP5772</h3><div class="price">14 500 DA</div><div class="sizes">Pointures : 42 • 43 • 44 • 45</div><button class="btn" onclick="order('Adidas Ultraboost HP5772','14 500 DA')">Commander</button></div>
+</article>
+
+<article class="card" data-brand="Adidas" data-name="Adidas Sneakers Homme">
+<div class="pic" onclick="openProduct('montante','Adidas Sneakers Homme')">
+<svg viewBox="0 0 500 350" xmlns="http://www.w3.org/2000/svg"><rect width="500" height="350" fill="#e8e8e8"/><ellipse cx="250" cy="290" rx="175" ry="22" fill="#ccc"/><path d="M115 230l15-125 65-18 47 67c20 27 52 42 95 58 17 6 27 18 20 30H120c-12 0-15-5-5-12z" fill="#fff" stroke="#aaa" stroke-width="4"/><path d="M151 112l48-10 27 52-65 18z" fill="#111"/><path d="M165 130h52M160 151h60M155 173h63" stroke="#fff" stroke-width="9"/><path d="M120 258h275" stroke="#222" stroke-width="18" stroke-linecap="round"/><text x="250" y="70" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold">ADIDAS</text></svg>
+</div><div class="body"><span class="tag">Adidas</span><h3>Adidas Sneakers Homme</h3><div class="price">9 000 DA</div><div class="sizes">Pointures : 41 • 42</div><button class="btn" onclick="order('Adidas Sneakers Homme','9 000 DA')">Commander</button></div>
+</article>
+
+</div><div id="empty" class="empty">Aucun produit trouvé.</div>
+</section>
+
+<section class="container" id="nouveautes"><h2>Pourquoi Kamland DZ ?</h2><div class="info">
+<div class="box">🚚<b>Livraison</b>58 wilayas</div><div class="box">💵<b>Paiement</b>À la livraison</div><div class="box">💬<b>Commande</b>WhatsApp</div>
+</div></section>
+
+<footer id="contact"><div class="foot"><h3>KAMLAND DZ</h3><p>📞 0667 484 678</p><a class="wa" href="https://wa.me/213667484678" target="_blank">Écrire sur WhatsApp</a></div></footer>
+
+<div class="viewer" id="viewer" onclick="closeProduct()"><button class="close" onclick="closeProduct()">×</button><div class="viewer-card" onclick="event.stopPropagation()"><div id="viewerArt"></div><div class="viewer-title" id="viewerTitle"></div></div></div>
+
+<script>
+const arts={
+nike:`<svg viewBox="0 0 500 350" xmlns="http://www.w3.org/2000/svg"><rect width="500" height="350" fill="#e9e9e9"/><ellipse cx="250" cy="285" rx="175" ry="22" fill="#ccc"/><path d="M105 225c30-8 60-18 91-47l55-54 47 52c20 22 45 31 82 43 18 6 29 19 23 31H120c-22 0-29-16-15-25z" fill="#222"/><path d="M150 220c35-7 55-18 78-42l37-38 28 31c-28 17-55 36-89 49z" fill="#d71920"/><path d="M302 153l42 47 49 18" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/><path d="M122 250h275" stroke="#fff" stroke-width="18" stroke-linecap="round"/><text x="250" y="65" text-anchor="middle" font-family="Arial" font-size="24" font-weight="bold">NIKE</text></svg>`,
+reebok:`<svg viewBox="0 0 500 350" xmlns="http://www.w3.org/2000/svg"><rect width="500" height="350" fill="#eee"/><ellipse cx="250" cy="285" rx="175" ry="22" fill="#ccc"/><path d="M105 225c30-8 60-18 91-47l55-54 47 52c20 22 45 31 82 43 18 6 29 19 23 31H120c-22 0-29-16-15-25z" fill="#f7f7f7" stroke="#bbb" stroke-width="3"/><path d="M145 224h205" stroke="#d6aa28" stroke-width="15"/><path d="M260 132l45 48" stroke="#d6aa28" stroke-width="9"/><circle cx="260" cy="128" r="20" fill="#d6aa28"/><text x="250" y="70" text-anchor="middle" font-family="Arial" font-size="21" font-weight="bold">REEBOK</text></svg>`,
+ultra:`<svg viewBox="0 0 500 350" xmlns="http://www.w3.org/2000/svg"><rect width="500" height="350" fill="#e8e8e8"/><ellipse cx="250" cy="285" rx="175" ry="22" fill="#ccc"/><path d="M105 225c30-8 60-18 91-47l55-54 47 52c20 22 45 31 82 43 18 6 29 19 23 31H120c-22 0-29-16-15-25z" fill="#fff" stroke="#aaa" stroke-width="3"/><path d="M180 195l55-55 40 45-45 32z" fill="#111"/><path d="M195 185l50-50M218 200l50-51M241 213l50-48" stroke="#fff" stroke-width="10"/><path d="M120 250h280" stroke="#222" stroke-width="17" stroke-linecap="round"/><text x="250" y="70" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold">ADIDAS</text></svg>`,
+montante:`<svg viewBox="0 0 500 350" xmlns="http://www.w3.org/2000/svg"><rect width="500" height="350" fill="#e8e8e8"/><ellipse cx="250" cy="290" rx="175" ry="22" fill="#ccc"/><path d="M115 230l15-125 65-18 47 67c20 27 52 42 95 58 17 6 27 18 20 30H120c-12 0-15-5-5-12z" fill="#fff" stroke="#aaa" stroke-width="4"/><path d="M151 112l48-10 27 52-65 18z" fill="#111"/><path d="M165 130h52M160 151h60M155 173h63" stroke="#fff" stroke-width="9"/><path d="M120 258h275" stroke="#222" stroke-width="18" stroke-linecap="round"/><text x="250" y="70" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold">ADIDAS</text></svg>`
+};
+function openProduct(id,title){document.getElementById('viewerArt').innerHTML=arts[id];document.getElementById('viewerTitle').textContent=title;document.getElementById('viewer').classList.add('show')}
+function closeProduct(){document.getElementById('viewer').classList.remove('show');document.getElementById('viewerArt').innerHTML=''}
+function order(name,price){window.open('https://wa.me/213667484678?text='+encodeURIComponent('Bonjour Kamland DZ, je veux commander '+name+' - '+price),'_blank')}
+function filterProducts(){const q=document.getElementById('search').value.toLowerCase().trim(),b=document.getElementById('brand').value;let n=0;document.querySelectorAll('#productGrid .card').forEach(c=>{const ok=(!q||c.dataset.name.toLowerCase().includes(q))&&(!b||c.dataset.brand===b);c.style.display=ok?'block':'none';if(ok)n++});document.getElementById('empty').style.display=n?'none':'block'}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeProduct()});
+</script>
+</body></html>
