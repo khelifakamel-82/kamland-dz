@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KAMLAND DZ | Boutique</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f6f7f9;color:#171717}
+header{background:#111;color:#fff;padding:10px 15px;position:sticky;top:0;z-index:5}.nav{max-width:1100px;margin:auto;display:flex;align-items:center;gap:12px}
+.logo{width:56px;height:56px;border-radius:50%;object-fit:cover;background:#fff}.title{font-weight:900;font-size:22px}.title small{display:block;color:#bbb;font-size:12px}.wa{margin-left:auto;background:#20c76a;color:#fff;text-decoration:none;padding:12px 15px;border-radius:10px;font-weight:bold}
+.hero{background:linear-gradient(135deg,#111,#292929);color:#fff;padding:42px 15px}.hero-in{max-width:1100px;margin:auto}.hero h1{font-size:42px;margin:20px 0 10px}.hero p{color:#ddd;max-width:650px;line-height:1.5}.badges{display:flex;gap:8px;flex-wrap:wrap}.badge{border:1px solid #666;border-radius:25px;padding:8px 12px}
+.container{max-width:1100px;margin:auto;padding:30px 15px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.toolbar input,.toolbar select{padding:13px;border:1px solid #ddd;border-radius:10px;background:#fff;flex:1;min-width:200px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}.card{background:#fff;border-radius:17px;overflow:hidden;box-shadow:0 4px 18px #0001}.pic{height:250px;background:#eee;position:relative;cursor:pointer}.pic img{width:100%;height:100%;object-fit:cover}.plus{position:absolute;right:12px;bottom:12px;width:44px;height:44px;border:0;border-radius:50%;background:#111;color:#fff;font-size:26px}.body{padding:15px}.brand{color:#777;font-size:13px}.body h3{margin:6px 0}.price{font-size:22px;font-weight:900;margin:8px 0}.sizes{color:#666;margin-bottom:12px}.btn{width:100%;border:0;border-radius:10px;padding:12px;background:#20c76a;color:#fff;font-weight:bold}
+.admin{background:#fff;border:2px dashed #d8a928;border-radius:15px;padding:20px;margin:20px 0}.admin h2{margin-top:0}.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.admin input,.admin select{width:100%;padding:12px;border:1px solid #ddd;border-radius:9px}.admin button{margin-top:10px;padding:12px 16px;border:0;border-radius:9px;background:#111;color:#fff;font-weight:bold}.note{font-size:13px;color:#666}
+.modal{display:none;position:fixed;inset:0;background:#000c;z-index:20;align-items:center;justify-content:center;padding:15px}.modal.show{display:flex}.modal img{max-width:95%;max-height:85vh;border-radius:12px}.close{position:absolute;right:20px;top:20px;width:42px;height:42px;border:0;border-radius:50%;font-size:24px}
+footer{background:#111;color:#fff;text-align:center;padding:25px}
+@media(max-width:600px){.admin-grid{grid-template-columns:1fr}.hero h1{font-size:34px}}
+</style>
+</head>
+<body>
+
+<header><div class="nav">
+<img class="logo" src="logo-kamland-dz.png" alt="KAMLAND DZ">
+<div class="title">KAMLAND DZ<small>Baskets & Chaussures</small></div>
+<a class="wa" href="https://wa.me/213667484678" target="_blank">WhatsApp</a>
+</div></header>
+
+<section class="hero"><div class="hero-in">
+<div class="badges"><span class="badge">🇩🇿 58 wilayas</span><span class="badge">💵 Paiement à la livraison</span><span class="badge">📱 Commande WhatsApp</span></div>
+<h1>Ton style. Ton choix.</h1>
+<p>Découvrez notre sélection de baskets et sneakers. Choisissez votre pointure et commandez directement sur WhatsApp.</p>
+</div></section>
+
+<section class="container">
+<div class="admin">
+<h2>➕ Ajouter un produit</h2>
+<p class="note">Cette zone sert à préparer un produit. Elle fonctionne dans le navigateur et permet de tester immédiatement l'ajout. Pour publier le produit pour tous les clients, il faudra ensuite enregistrer les données dans le site.</p>
+<div class="admin-grid">
+<input id="pname" placeholder="Nom du produit">
+<select id="pbrand"><option>Adidas</option><option>Nike</option><option>Reebok</option><option>Autre</option></select>
+<input id="pprice" type="number" placeholder="Prix en DA">
+<input id="psizes" placeholder="Pointures : 38, 39, 40">
+<input id="pimage" placeholder="Nom exact de la photo, ex: nouveau.jpg">
+</div>
+<button onclick="addProduct()">Ajouter le produit</button>
+</div>
+
+<h2>Notre boutique</h2>
+<div class="toolbar">
+<input id="search" placeholder="🔎 Rechercher..." oninput="filterProducts()">
+<select id="brandFilter" onchange="filterProducts()"><option value="">Toutes les marques</option><option>Adidas</option><option>Nike</option><option>Reebok</option><option>Autre</option></select>
+</div>
+<div class="grid" id="productGrid"></div>
+</section>
+
+<footer><b>KAMLAND DZ</b><br>📞 0667 484 678</footer>
+
+<div class="modal" id="modal" onclick="closePhoto()"><button class="close">×</button><img id="big" src="" alt=""></div>
+
+<script>
+const defaultProducts=[
+{name:'Nike rouge/noir',brand:'Nike',price:'10000',sizes:'36, 37, 38, 40',image:'nike_rouge.jpg'},
+{name:'Reebok Club C Coast Collegiate Gold',brand:'Reebok',price:'8900',sizes:'40.5, 41, 42',image:'reebok_jaune.jpg'},
+{name:'Adidas Ultraboost HP5772',brand:'Adidas',price:'14500',sizes:'42, 43, 44, 45',image:'adidas_ultrabounce.jpg'},
+{name:'Adidas Sneakers Homme',brand:'Adidas',price:'9000',sizes:'41, 42',image:'adidas_montante.jpg'},
+{name:'Adidas Germany Performance Original',brand:'Adidas',price:'8000',sizes:'38, 39, 40',image:'adidas_femme_pink.jpg'}
+];
+let products=JSON.parse(localStorage.getItem('kamland_products')||'null')||defaultProducts;
+
+function save(){localStorage.setItem('kamland_products',JSON.stringify(products))}
+function money(n){return Number(n).toLocaleString('fr-FR')+' DA'}
+function render(){
+ const grid=document.getElementById('productGrid');
+ grid.innerHTML=products.map((p,i)=>`<article class="card" data-brand="${p.brand}" data-name="${p.name.toLowerCase()}">
+ <div class="pic" onclick="openPhoto('${p.image}')"><img src="${p.image}" alt="${p.name}"><button class="plus">+</button></div>
+ <div class="body"><div class="brand">${p.brand}</div><h3>${p.name}</h3><div class="price">${money(p.price)}</div><div class="sizes">Pointures : ${p.sizes}</div>
+ <button class="btn" onclick="order(${i})">Commander</button></div></article>`).join('');
+ filterProducts();
+}
+function filterProducts(){
+ const q=document.getElementById('search').value.toLowerCase(),b=document.getElementById('brandFilter').value;
+ document.querySelectorAll('#productGrid .card').forEach(c=>c.style.display=(!q||c.dataset.name.includes(q))&&(!b||c.dataset.brand===b)?'block':'none');
+}
+function addProduct(){
+ const name=document.getElementById('pname').value.trim(),brand=document.getElementById('pbrand').value,price=document.getElementById('pprice').value.trim(),sizes=document.getElementById('psizes').value.trim(),image=document.getElementById('pimage').value.trim();
+ if(!name||!price||!sizes||!image){alert('Remplis le nom, prix, pointures et nom de la photo.');return}
+ products.push({name,brand,price,sizes,image});save();render();
+ document.getElementById('pname').value='';document.getElementById('pprice').value='';document.getElementById('psizes').value='';document.getElementById('pimage').value='';
+ alert('Produit ajouté sur cet appareil.');
+}
+function order(i){
+ const p=products[i];
+ const msg='Bonjour Kamland DZ 👋 Je veux commander '+p.name+' - '+money(p.price)+' - Pointure : ';
+ window.open('https://wa.me/213667484678?text='+encodeURIComponent(msg),'_blank');
+}
+function openPhoto(src){document.getElementById('big').src=src;document.getElementById('modal').classList.add('show')}
+function closePhoto(){document.getElementById('modal').classList.remove('show')}
+render();
+</script>
+</body>
+</html>
