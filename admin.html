@@ -1,1 +1,232 @@
 
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KAMLAND DZ - Administration</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f5f5f5;
+  color:#111;
+}
+header{
+  background:#111;
+  color:white;
+  padding:20px;
+  text-align:center;
+  border-bottom:3px solid #d8a928;
+}
+.container{
+  max-width:600px;
+  margin:30px auto;
+  padding:20px;
+}
+.box{
+  background:white;
+  padding:25px;
+  border-radius:15px;
+  box-shadow:0 5px 20px #0002;
+}
+h1{margin:0 0 5px}
+h2{margin-top:0}
+label{
+  display:block;
+  margin-top:15px;
+  font-weight:bold;
+}
+input,select{
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  border:1px solid #ddd;
+  border-radius:8px;
+  font-size:16px;
+}
+.sizes{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+.sizes input{
+  width:80px;
+}
+button{
+  width:100%;
+  margin-top:22px;
+  padding:14px;
+  border:0;
+  border-radius:9px;
+  background:#20c76a;
+  color:white;
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{opacity:.9}
+#message{
+  margin-top:15px;
+  text-align:center;
+  font-weight:bold;
+}
+.preview{
+  width:100%;
+  max-height:250px;
+  object-fit:contain;
+  margin-top:10px;
+  border-radius:10px;
+  display:none;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>KAMLAND DZ</h1>
+  <div>Administration — Ajouter un produit</div>
+</header>
+
+<div class="container">
+<div class="box">
+
+<h2>Ajouter un produit</h2>
+
+<label>Marque</label>
+<select id="brand">
+  <option value="">Choisir une marque</option>
+  <option value="Adidas">Adidas</option>
+  <option value="Nike">Nike</option>
+  <option value="Reebok">Reebok</option>
+  <option value="The North Face">The North Face</option>
+  <option value="Autre">Autre</option>
+</select>
+
+<label>Nom du produit</label>
+<input id="name" placeholder="Ex : Nike Air Max">
+
+<label>Prix (DA)</label>
+<input id="price" type="number" placeholder="Ex : 15000">
+
+<label>Lien direct de la photo</label>
+<input id="image" placeholder="https://i.ibb.co/...">
+
+<img id="preview" class="preview">
+
+<label>Pointures</label>
+
+<div class="sizes">
+  <input id="size1" type="number" step="0.5" placeholder="40">
+  <input id="size2" type="number" step="0.5" placeholder="41">
+  <input id="size3" type="number" step="0.5" placeholder="42">
+  <input id="size4" type="number" step="0.5" placeholder="43">
+  <input id="size5" type="number" step="0.5" placeholder="44">
+  <input id="size6" type="number" step="0.5" placeholder="45">
+</div>
+
+<button onclick="addProduct()">➕ AJOUTER LE PRODUIT</button>
+
+<div id="message"></div>
+
+</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+
+const firebaseConfig = {
+  apiKey:"AIzaSyAE5HUTFnWp3NJ-c4cMxq3014XjK7nxetc",
+  authDomain:"kamland-dz.firebaseapp.com",
+  projectId:"kamland-dz",
+  storageBucket:"kamland-dz.firebasestorage.app",
+  messagingSenderId:"821915710530",
+  appId:"1:821915710530:web:4b6734b44c62f18f88a9db",
+  measurementId:"G-71TMDK1LRC"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+
+document.getElementById("image").addEventListener("input",function(){
+  const url=this.value.trim();
+  const preview=document.getElementById("preview");
+
+  if(url){
+    preview.src=url;
+    preview.style.display="block";
+  }else{
+    preview.style.display="none";
+  }
+});
+
+async function addProduct(){
+
+  const brand=document.getElementById("brand").value;
+  const name=document.getElementById("name").value.trim();
+  const price=Number(document.getElementById("price").value);
+  const image=document.getElementById("image").value.trim();
+
+  const sizes=[];
+
+  for(let i=1;i<=6;i++){
+    const value=document.getElementById("size"+i).value;
+
+    if(value!==""){
+      sizes.push(Number(value));
+    }
+  }
+
+  const message=document.getElementById("message");
+
+  if(!brand || !name || !price || !image || sizes.length===0){
+    message.style.color="red";
+    message.textContent="⚠️ Remplis tous les champs obligatoires.";
+    return;
+  }
+
+  try{
+
+    await db.collection("products").add({
+      brand:brand,
+      image:image,
+      name:name,
+      price:price,
+      sizes:sizes
+    });
+
+    message.style.color="green";
+    message.textContent="✅ Produit ajouté avec succès !";
+
+    document.getElementById("brand").value="";
+    document.getElementById("name").value="";
+    document.getElementById("price").value="";
+    document.getElementById("image").value="";
+
+    document.getElementById("preview").style.display="none";
+
+    for(let i=1;i<=6;i++){
+      document.getElementById("size"+i).value="";
+    }
+
+  }catch(error){
+
+    console.error(error);
+
+    message.style.color="red";
+    message.textContent="❌ Erreur Firebase : "+error.message;
+
+  }
+}
+
+</script>
+
+</body>
+</html>
