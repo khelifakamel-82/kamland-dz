@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KAMLAND DZ - Administration</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f5f5;color:#111}
+header{background:#111;color:#fff;padding:20px;text-align:center;border-bottom:3px solid #d8a928}
+.container{max-width:600px;margin:25px auto;padding:15px}
+.box{background:#fff;padding:24px;border-radius:15px;box-shadow:0 5px 20px #0002}
+h1{margin:0 0 5px}h2{margin-top:0}
+label{display:block;margin-top:14px;font-weight:bold}
+input,select{width:100%;padding:12px;margin-top:6px;border:1px solid #ddd;border-radius:8px;font-size:16px}
+.sizes{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.sizes input{width:78px}
+button{width:100%;margin-top:20px;padding:14px;border:0;border-radius:9px;background:#20c76a;color:#fff;font-size:17px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.6}
+#message{text-align:center;font-weight:bold;margin-top:14px}
+.preview{width:100%;max-height:250px;object-fit:contain;margin-top:10px;border-radius:10px;display:none}
+.user{background:#f1f1f1;padding:10px;border-radius:9px;margin-bottom:15px}
+.logout{background:#222;margin-top:10px;font-size:14px;padding:10px}
+.login{display:none}
+.error{color:#c62828}.success{color:#16803c}
+</style>
+</head>
+<body>
+<header>
+<h1>KAMLAND DZ</h1>
+<div>Administration</div>
+</header>
+
+<div class="container">
+
+<div class="box login" id="loginBox">
+<h2>🔐 Connexion administrateur</h2>
+<label>Email</label>
+<input id="loginEmail" type="email" value="kamimi_82@yahoo.com" autocomplete="username">
+<label>Mot de passe</label>
+<input id="loginPassword" type="password" autocomplete="current-password">
+<button id="loginButton" onclick="login()">🔐 SE CONNECTER</button>
+<div id="loginMessage"></div>
+</div>
+
+<div class="box" id="adminBox" style="display:none">
+<div class="user">
+👤 Administrateur connecté<br>
+<b id="userEmail"></b>
+<button class="logout" onclick="logout()">🚪 SE DÉCONNECTER</button>
+</div>
+
+<h2>➕ Ajouter un produit</h2>
+
+<label>Marque</label>
+<select id="brand">
+<option value="">Choisir une marque</option>
+<option>Adidas</option><option>Nike</option><option>Reebok</option>
+<option>The North Face</option><option>Autre</option>
+</select>
+
+<label>Nom du produit</label>
+<input id="name" placeholder="Ex : Nike Air Max">
+
+<label>Prix (DA)</label>
+<input id="price" type="number" min="1" placeholder="Ex : 15000">
+
+<label>Lien direct de la photo</label>
+<input id="image" placeholder="https://i.postimg.cc/...">
+<img id="preview" class="preview" alt="Aperçu du produit">
+
+<label>Pointures</label>
+<div class="sizes">
+<input id="size1" type="number" step="0.5" placeholder="40">
+<input id="size2" type="number" step="0.5" placeholder="41">
+<input id="size3" type="number" step="0.5" placeholder="42">
+<input id="size4" type="number" step="0.5" placeholder="43">
+<input id="size5" type="number" step="0.5" placeholder="44">
+<input id="size6" type="number" step="0.5" placeholder="45">
+</div>
+
+<button id="addButton" onclick="addProduct()">➕ AJOUTER LE PRODUIT</button>
+<div id="message"></div>
+</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig={
+apiKey:"AIzaSyAE5HUTFnWp3NJ-c4cMxq3014XjK7nxetc",
+authDomain:"kamland-dz.firebaseapp.com",
+projectId:"kamland-dz",
+storageBucket:"kamland-dz.firebasestorage.app",
+messagingSenderId:"821915710530",
+appId:"1:821915710530:web:4b6734b44c62f18f88a9db",
+measurementId:"G-71TMDK1LRC"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
+
+const ADMIN_UID="O8N1eA6S3DMJDb95TXGx9twUos53";
+
+auth.onAuthStateChanged(user=>{
+if(user && user.uid===ADMIN_UID){
+document.getElementById("loginBox").style.display="none";
+document.getElementById("adminBox").style.display="block";
+document.getElementById("userEmail").textContent=user.email||"Administrateur";
+}else if(user){
+auth.signOut();
+showLogin("❌ Ce compte n'est pas autorisé comme administrateur.");
+}else{
+document.getElementById("loginBox").style.display="block";
+document.getElementById("adminBox").style.display="none";
+}
+});
+
+function showLogin(msg){
+const el=document.getElementById("loginMessage");
+el.className="error"; el.textContent=msg||"";
+}
+
+async function login(){
+const email=document.getElementById("loginEmail").value.trim();
+const password=document.getElementById("loginPassword").value;
+const btn=document.getElementById("loginButton");
+if(!email||!password){showLogin("⚠️ Entre ton email et ton mot de passe.");return}
+btn.disabled=true;btn.textContent="⏳ CONNEXION...";
+try{
+await auth.signInWithEmailAndPassword(email,password);
+document.getElementById("loginMessage").textContent="";
+}catch(e){
+showLogin("❌ Connexion impossible : "+e.message);
+btn.disabled=false;btn.textContent="🔐 SE CONNECTER";
+}
+}
+
+async function logout(){await auth.signOut()}
+
+document.getElementById("image").addEventListener("input",function(){
+const url=this.value.trim(),preview=document.getElementById("preview");
+if(url){preview.src=url;preview.style.display="block"}
+else preview.style.display="none";
+});
+
+document.getElementById("preview").addEventListener("error",function(){
+this.style.display="none";
+});
+
+async function addProduct(){
+const user=auth.currentUser;
+const message=document.getElementById("message");
+const button=document.getElementById("addButton");
+
+if(!user){
+message.className="error";
+message.textContent="❌ Tu n'es pas connecté.";
+return;
+}
+if(user.uid!==ADMIN_UID){
+message.className="error";
+message.textContent="❌ Compte non autorisé.";
+return;
+}
+
+const brand=document.getElementById("brand").value;
+const name=document.getElementById("name").value.trim();
+const price=Number(document.getElementById("price").value);
+const image=document.getElementById("image").value.trim();
+const sizes=[];
+
+for(let i=1;i<=6;i++){
+const v=document.getElementById("size"+i).value;
+if(v!=="") sizes.push(Number(v));
+}
+
+if(!brand||!name||!price||!image||sizes.length===0){
+message.className="error";
+message.textContent="⚠️ Remplis tous les champs obligatoires.";
+return;
+}
+
+button.disabled=true;
+button.textContent="⏳ AJOUT EN COURS...";
+message.textContent="";
+
+try{
+await db.collection("products").add({
+brand:brand,
+image:image,
+name:name,
+price:price,
+sizes:sizes,
+createdAt:firebase.firestore.FieldValue.serverTimestamp()
+});
+
+message.className="success";
+message.textContent="✅ Produit ajouté avec succès !";
+
+document.getElementById("brand").value="";
+document.getElementById("name").value="";
+document.getElementById("price").value="";
+document.getElementById("image").value="";
+document.getElementById("preview").style.display="none";
+for(let i=1;i<=6;i++) document.getElementById("size"+i).value="";
+
+}catch(error){
+console.error(error);
+message.className="error";
+message.textContent="❌ Erreur Firebase : "+error.message;
+}finally{
+button.disabled=false;
+button.textContent="➕ AJOUTER LE PRODUIT";
+}
+}
+</script>
+</body>
+</html>
