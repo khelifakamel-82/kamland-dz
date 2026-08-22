@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KAMLAND DZ - Administration</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f5f5;color:#111}
+header{background:#111;color:#fff;padding:20px;text-align:center;border-bottom:3px solid #d8a928}
+.container{max-width:600px;margin:30px auto;padding:20px}
+.box{background:#fff;padding:25px;border-radius:15px;box-shadow:0 5px 20px #0002}
+h1{margin:0 0 5px}h2{margin-top:0}
+label{display:block;margin-top:15px;font-weight:bold}
+input,select{width:100%;padding:12px;margin-top:6px;border:1px solid #ddd;border-radius:8px;font-size:16px}
+.sizes{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.sizes input{width:80px}
+button{width:100%;margin-top:22px;padding:14px;border:0;border-radius:9px;background:#20c76a;color:#fff;font-size:17px;font-weight:bold;cursor:pointer}
+button:hover{opacity:.9}
+#message{text-align:center;font-weight:bold;margin-top:15px}
+.preview{width:100%;max-height:250px;object-fit:contain;margin-top:10px;border-radius:10px;display:none}
+#adminBox{display:none}
+.logout{background:#111;margin-top:10px}
+.small{text-align:center;color:#666;font-size:13px;margin-top:10px}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:15px 0}
+.stat{background:#f8f8f8;border:1px solid #eee;border-radius:12px;padding:15px;text-align:center}
+.stat b{display:block;font-size:24px;margin-top:5px}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.refresh{width:auto;background:#111;margin-top:0;padding:10px 15px}
+.orders{display:grid;gap:15px}
+.order-card{border:1px solid #e5e5e5;border-radius:14px;padding:16px;background:#fff}
+.order-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.order-id{font-size:12px;color:#888;word-break:break-all}
+.order-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 20px;margin-top:12px}
+.order-item{padding:7px 0;border-bottom:1px solid #eee}
+.order-item strong{display:block;font-size:12px;color:#777;margin-bottom:3px}
+.status{max-width:220px}.status-select{margin-top:0}.delete{background:#dc3545}
+.empty,.loading{text-align:center;padding:25px;color:#666}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.order-grid{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+
+<header>
+<h1>KAMLAND DZ</h1>
+<div>Administration — Gestion des produits</div>
+</header>
+
+<div class="container">
+
+<div class="box" id="loginBox">
+<h2>Connexion administrateur</h2>
+<p>Connecte-toi avec le compte Firebase autorisé.</p>
+
+<label>Email</label>
+<input id="loginEmail" type="email" placeholder="Votre email">
+
+<label>Mot de passe</label>
+<input id="loginPassword" type="password" placeholder="Votre mot de passe">
+
+<button onclick="login()">🔐 SE CONNECTER</button>
+<div id="loginMessage"></div>
+</div>
+
+<div class="box" id="adminBox">
+<h2>Ajouter un produit</h2>
+
+<label>Marque</label>
+<select id="brand">
+<option value="">Choisir une marque</option>
+<option>Adidas</option>
+<option>Nike</option>
+<option>Reebok</option>
+<option>The North Face</option>
+<option>Autre</option>
+</select>
+
+<label>Nom du produit</label>
+<input id="name" placeholder="Ex : Nike Air Max">
+
+<label>Prix (DA)</label>
+<input id="price" type="number" placeholder="Ex : 15000">
+
+<label>Lien direct de la photo</label>
+<input id="image" placeholder="https://i.postimg.cc/...">
+
+<img id="preview" class="preview" alt="Aperçu">
+
+<label>Pointures</label>
+<div class="sizes">
+<input id="size1" type="number" step="0.5" placeholder="40">
+<input id="size2" type="number" step="0.5" placeholder="41">
+<input id="size3" type="number" step="0.5" placeholder="42">
+<input id="size4" type="number" step="0.5" placeholder="43">
+<input id="size5" type="number" step="0.5" placeholder="44">
+<input id="size6" type="number" step="0.5" placeholder="45">
+</div>
+
+<button onclick="addProduct()">➕ AJOUTER LE PRODUIT</button>
+
+<div class="box" id="ordersBox">
+<div class="section-title">
+<h2>📦 Commandes reçues</h2>
+<button class="refresh" onclick="loadOrders()">🔄 Actualiser</button>
+</div>
+<div class="stats">
+<div class="stat">Total<b id="totalOrders">0</b></div>
+<div class="stat">Nouvelles<b id="newOrders">0</b></div>
+<div class="stat">Confirmées<b id="confirmedOrders">0</b></div>
+<div class="stat">Livrées<b id="deliveredOrders">0</b></div>
+</div>
+<div id="ordersList" class="orders"><div class="loading">⏳ Chargement des commandes...</div></div>
+</div>
+
+<button class="logout" onclick="logout()">🚪 SE DÉCONNECTER</button>
+<div id="message"></div>
+</div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">
+const STATUS_LIST=["Nouvelle","Confirmée","En préparation","Expédiée","Livrée","Annulée"];
+function escapeHtml(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+function formatPrice(v){return Number(v||0).toLocaleString("fr-FR")+" DA"}
+function formatDate(ts){if(!ts)return "Date en attente";try{return ts.toDate().toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})}catch(e){return "Date inconnue"}}
+async function loadOrders(){
+ const user=auth.currentUser;if(!user||user.uid!==ADMIN_UID)return;
+ const list=document.getElementById("ordersList");list.innerHTML='<div class="loading">⏳ Chargement des commandes...</div>';
+ try{
+  const snap=await db.collection("orders").get(),orders=[];
+  snap.forEach(d=>orders.push({id:d.id,...d.data()}));
+  orders.sort((a,b)=>(b.createdAt?.toMillis?b.createdAt.toMillis():0)-(a.createdAt?.toMillis?a.createdAt.toMillis():0));
+  document.getElementById("totalOrders").textContent=orders.length;
+  document.getElementById("newOrders").textContent=orders.filter(o=>(o.status||"Nouvelle")==="Nouvelle").length;
+  document.getElementById("confirmedOrders").textContent=orders.filter(o=>(o.status||"")==="Confirmée").length;
+  document.getElementById("deliveredOrders").textContent=orders.filter(o=>(o.status||"")==="Livrée").length;
+  if(!orders.length){list.innerHTML='<div class="empty">📭 Aucune commande reçue.</div>';return}
+  list.innerHTML=orders.map(o=>`
+  <div class="order-card">
+   <div class="order-head">
+    <div><h3 style="margin:0 0 5px">📦 ${escapeHtml(o.productName||"Produit")}</h3><div class="order-id">ID : ${escapeHtml(o.id)}</div></div>
+    <select class="status-select" onchange="changeStatus('${escapeHtml(o.id)}',this.value)">
+    ${STATUS_LIST.map(s=>`<option value="${escapeHtml(s)}" ${s===(o.status||"Nouvelle")?"selected":""}>${escapeHtml(s)}</option>`).join("")}</select>
+   </div>
+   <div class="order-grid">
+    <div class="order-item"><strong>👤 NOM ET PRÉNOM</strong>${escapeHtml(((o.firstName||"")+" "+(o.lastName||"")).trim()||"—")}</div>
+    <div class="order-item"><strong>📞 TÉLÉPHONE</strong>${escapeHtml(o.phone||"—")}</div>
+    <div class="order-item"><strong>📍 WILAYA</strong>${escapeHtml(o.wilaya||"—")}</div>
+    <div class="order-item"><strong>🏠 ADRESSE</strong>${escapeHtml(o.address||"—")}</div>
+    <div class="order-item"><strong>👟 PRODUIT</strong>${escapeHtml(o.productName||"—")}</div>
+    <div class="order-item"><strong>📏 POINTURE</strong>${escapeHtml(o.size||"—")}</div>
+    <div class="order-item"><strong>💰 PRIX</strong>${formatPrice(o.price)}</div>
+    <div class="order-item"><strong>📅 DATE</strong>${formatDate(o.createdAt)}</div>
+   </div>
+   <button class="delete" onclick="deleteOrder('${escapeHtml(o.id)}')">🗑️ SUPPRIMER LA COMMANDE</button>
+  </div>`).join("");
+ }catch(e){console.error(e);list.innerHTML='<div class="empty" style="color:#c00">❌ Impossible de charger les commandes.<br>'+escapeHtml(e.message)+'</div>'}
+}
+async function changeStatus(id,status){
+ if(!auth.currentUser||auth.currentUser.uid!==ADMIN_UID){alert("❌ Accès administrateur requis.");return}
+ try{await db.collection("orders").doc(id).update({status,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});await loadOrders()}
+ catch(e){alert("❌ Impossible de modifier le statut : "+e.message);await loadOrders()}
+}
+async function deleteOrder(id){
+ if(!auth.currentUser||auth.currentUser.uid!==ADMIN_UID){alert("❌ Accès administrateur requis.");return}
+ if(!confirm("⚠️ Voulez-vous vraiment supprimer cette commande ?\nCette action est irréversible."))return;
+ try{await db.collection("orders").doc(id).delete();await loadOrders()}
+ catch(e){alert("❌ Impossible de supprimer la commande : "+e.message)}
+}
+
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig={
+apiKey:"AIzaSyAE5HUTFnWp3NJ-c4cMxq3014XjK7nxetc",
+authDomain:"kamland-dz.firebaseapp.com",
+projectId:"kamland-dz",
+storageBucket:"kamland-dz.firebasestorage.app",
+messagingSenderId:"821915710530",
+appId:"1:821915710530:web:4b6734b44c62f18f88a9db",
+measurementId:"G-71TMDK1LRC"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
+
+const ADMIN_UID="O8N1eA6S3DMJDb95TXGx9twUos53";
+
+auth.onAuthStateChanged(user=>{
+if(user && user.uid===ADMIN_UID){
+document.getElementById("loginBox").style.display="none";
+document.getElementById("adminBox").style.display="block";
+loadOrders();
+}else{
+document.getElementById("loginBox").style.display="block";
+document.getElementById("adminBox").style.display="none";
+}
+});
+
+async function login(){
+const email=document.getElementById("loginEmail").value.trim();
+const password=document.getElementById("loginPassword").value;
+const msg=document.getElementById("loginMessage");
+
+if(!email||!password){
+msg.style.color="red";
+msg.textContent="⚠️ Entre votre email et votre mot de passe.";
+return;
+}
+
+try{
+const result=await auth.signInWithEmailAndPassword(email,password);
+
+if(result.user.uid!==ADMIN_UID){
+await auth.signOut();
+throw new Error("Ce compte n'est pas autorisé comme administrateur.");
+}
+
+msg.style.color="green";
+msg.textContent="✅ Connexion réussie.";
+await loadOrders();
+}catch(e){
+msg.style.color="red";
+msg.textContent="❌ "+e.message;
+}
+}
+
+function logout(){
+auth.signOut();
+}
+
+document.getElementById("image").addEventListener("input",function(){
+const url=this.value.trim();
+const preview=document.getElementById("preview");
+if(url){
+preview.src=url;
+preview.style.display="block";
+}else{
+preview.style.display="none";
+}
+});
+
+document.getElementById("preview").addEventListener("error",function(){
+this.style.display="none";
+});
+
+async function addProduct(){
+const message=document.getElementById("message");
+const user=auth.currentUser;
+
+if(!user || user.uid!==ADMIN_UID){
+message.style.color="red";
+message.textContent="❌ Connecte-toi d'abord.";
+return;
+}
+
+const brand=document.getElementById("brand").value;
+const name=document.getElementById("name").value.trim();
+const price=Number(document.getElementById("price").value);
+const image=document.getElementById("image").value.trim();
+const sizes=[];
+
+for(let i=1;i<=6;i++){
+const value=document.getElementById("size"+i).value;
+if(value!=="") sizes.push(Number(value));
+}
+
+if(!brand||!name||!price||!image||sizes.length===0){
+message.style.color="red";
+message.textContent="⚠️ Remplis tous les champs obligatoires.";
+return;
+}
+
+try{
+await db.collection("products").add({
+brand:brand,
+image:image,
+name:name,
+price:price,
+sizes:sizes,
+createdAt:firebase.firestore.FieldValue.serverTimestamp()
+});
+
+message.style.color="green";
+message.textContent="✅ Produit ajouté avec succès !";
+
+document.getElementById("brand").value="";
+document.getElementById("name").value="";
+document.getElementById("price").value="";
+document.getElementById("image").value="";
+document.getElementById("preview").style.display="none";
+
+for(let i=1;i<=6;i++) document.getElementById("size"+i).value="";
+
+}catch(error){
+console.error(error);
+message.style.color="red";
+message.textContent="❌ Erreur Firebase : "+error.message;
+}
+}
+</script>
+</body>
+</html>
