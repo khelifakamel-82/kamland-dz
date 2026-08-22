@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KAMLAND DZ - Administration</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f5f5;color:#111}
+header{background:#111;color:#fff;padding:20px;text-align:center;border-bottom:3px solid #d8a928}
+.container{max-width:1100px;margin:25px auto;padding:15px}.box{background:#fff;padding:22px;border-radius:15px;box-shadow:0 5px 20px #0002;margin-bottom:20px}
+h1{margin:0 0 5px}h2{margin-top:0}label{display:block;margin-top:15px;font-weight:bold}
+input,select{width:100%;padding:12px;margin-top:6px;border:1px solid #ddd;border-radius:8px;font-size:16px}
+.sizes{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.sizes input{width:80px}
+button{width:100%;margin-top:18px;padding:14px;border:0;border-radius:9px;background:#20c76a;color:#fff;font-size:16px;font-weight:bold;cursor:pointer}
+.logout{background:#111}.preview{width:100%;max-height:250px;object-fit:contain;margin-top:10px;border-radius:10px;display:none}
+#adminBox{display:none}#message,#loginMessage{text-align:center;font-weight:bold;margin-top:15px}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.refresh{width:auto;background:#111;margin-top:0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:15px 0}.stat{background:#f8f8f8;border:1px solid #eee;border-radius:12px;padding:15px;text-align:center}.stat b{display:block;font-size:24px;margin-top:5px}
+.orders{display:grid;gap:15px}.order-card{border:1px solid #e5e5e5;border-radius:14px;padding:16px}.order-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}.order-id{font-size:12px;color:#888;word-break:break-all}
+.order-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 20px;margin-top:12px}.order-item{padding:7px 0;border-bottom:1px solid #eee}.order-item strong{display:block;font-size:12px;color:#777;margin-bottom:3px}
+.status-select{width:220px;margin-top:0}.delete{background:#dc3545}.empty,.loading{text-align:center;padding:25px;color:#666}
+.error{background:#fff0f0;color:#b00020;border:1px solid #ffcccc;padding:15px;border-radius:10px;margin-top:10px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.order-grid{grid-template-columns:1fr}.status-select{width:100%}}
+</style>
+</head>
+<body>
+<header><h1>KAMLAND DZ</h1><div>Administration — Produits & Commandes</div></header>
+
+<div class="container">
+<div class="box" id="loginBox">
+<h2>Connexion administrateur</h2><p>Connecte-toi avec le compte Firebase autorisé.</p>
+<label>Email</label><input id="loginEmail" type="email" placeholder="Votre email">
+<label>Mot de passe</label><input id="loginPassword" type="password" placeholder="Votre mot de passe">
+<button onclick="login()">🔐 SE CONNECTER</button><div id="loginMessage"></div>
+</div>
+
+<div id="adminBox">
+<div class="box">
+<h2>Ajouter un produit</h2>
+<label>Marque</label><select id="brand"><option value="">Choisir une marque</option><option>Adidas</option><option>Nike</option><option>Reebok</option><option>The North Face</option><option>Autre</option></select>
+<label>Nom du produit</label><input id="name" placeholder="Ex : Nike Air Max">
+<label>Prix (DA)</label><input id="price" type="number" placeholder="Ex : 15000">
+<label>Lien direct de la photo</label><input id="image" placeholder="https://i.postimg.cc/..."><img id="preview" class="preview" alt="Aperçu">
+<label>Pointures</label><div class="sizes">
+<input id="size1" type="number" step="0.5" placeholder="40"><input id="size2" type="number" step="0.5" placeholder="41"><input id="size3" type="number" step="0.5" placeholder="42"><input id="size4" type="number" step="0.5" placeholder="43"><input id="size5" type="number" step="0.5" placeholder="44"><input id="size6" type="number" step="0.5" placeholder="45">
+</div>
+<button onclick="addProduct()">➕ AJOUTER LE PRODUIT</button><div id="message"></div>
+</div>
+
+<div class="box">
+<div class="section-title"><h2>📦 Commandes reçues</h2><button class="refresh" onclick="loadOrders()">🔄 Actualiser</button></div>
+<div class="stats"><div class="stat">Total<b id="totalOrders">0</b></div><div class="stat">Nouvelles<b id="newOrders">0</b></div><div class="stat">Confirmées<b id="confirmedOrders">0</b></div><div class="stat">Livrées<b id="deliveredOrders">0</b></div></div>
+<div id="ordersList" class="orders"><div class="loading">⏳ Chargement des commandes...</div></div>
+</div>
+<button class="logout" onclick="logout()">🚪 SE DÉCONNECTER</button>
+</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyAE5HUTFnWp3NJ-c4cMxq3014XjK7nxetc",authDomain:"kamland-dz.firebaseapp.com",projectId:"kamland-dz",storageBucket:"kamland-dz.firebasestorage.app",messagingSenderId:"821915710530",appId:"1:821915710530:web:4b6734b44c62f18f88a9db",measurementId:"G-71TMDK1LRC"};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(),db=firebase.firestore();
+const ADMIN_UID="O8N1eA6S3DMJDb95TXGx9twUos53";
+const STATUS=["Nouvelle","Confirmée","En préparation","Expédiée","Livrée","Annulée"];
+
+auth.onAuthStateChanged(async user=>{
+ if(user&&user.uid===ADMIN_UID){
+  loginBox.style.display="none";adminBox.style.display="block";await loadOrders();
+ }else{loginBox.style.display="block";adminBox.style.display="none";}
+});
+
+async function login(){
+ const msg=document.getElementById("loginMessage"),email=loginEmail.value.trim(),password=loginPassword.value;
+ if(!email||!password){msg.style.color="red";msg.textContent="⚠️ Entre votre email et votre mot de passe.";return}
+ try{
+  const r=await auth.signInWithEmailAndPassword(email,password);
+  if(r.user.uid!==ADMIN_UID){await auth.signOut();throw new Error("Ce compte n'est pas autorisé comme administrateur.")}
+  msg.style.color="green";msg.textContent="✅ Connexion réussie.";
+  await loadOrders();
+ }catch(e){msg.style.color="red";msg.textContent="❌ "+e.message}
+}
+function logout(){auth.signOut()}
+
+image.addEventListener("input",()=>{if(image.value.trim()){preview.src=image.value.trim();preview.style.display="block"}else preview.style.display="none"});
+preview.addEventListener("error",()=>preview.style.display="none");
+
+async function addProduct(){
+ const m=message,u=auth.currentUser;if(!u||u.uid!==ADMIN_UID){m.style.color="red";m.textContent="❌ Connecte-toi d'abord.";return}
+ const sizes=[];for(let i=1;i<=6;i++){if(document.getElementById("size"+i).value!=="")sizes.push(Number(document.getElementById("size"+i).value))}
+ if(!brand.value||!name.value.trim()||!Number(price.value)||!image.value.trim()||!sizes.length){m.style.color="red";m.textContent="⚠️ Remplis tous les champs obligatoires.";return}
+ try{await db.collection("products").add({brand:brand.value,image:image.value.trim(),name:name.value.trim(),price:Number(price.value),sizes,createdAt:firebase.firestore.FieldValue.serverTimestamp()});m.style.color="green";m.textContent="✅ Produit ajouté avec succès !"}
+ catch(e){m.style.color="red";m.textContent="❌ Erreur Firebase : "+e.message}
+}
+
+function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+function date(v){try{return v.toDate().toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"})}catch(e){return "Date inconnue"}}
+function money(v){return Number(v||0).toLocaleString("fr-FR")+" DA"}
+
+async function loadOrders(){
+ const u=auth.currentUser,list=document.getElementById("ordersList");
+ if(!u||u.uid!==ADMIN_UID)return;
+ list.innerHTML='<div class="loading">⏳ Lecture de Firestore...</div>';
+ try{
+  const snap=await db.collection("orders").get();
+  const a=[];snap.forEach(d=>a.push({id:d.id,...d.data()}));
+  a.sort((x,y)=>(y.createdAt?.toMillis?.()||0)-(x.createdAt?.toMillis?.()||0));
+  totalOrders.textContent=a.length;
+  newOrders.textContent=a.filter(x=>(x.status||"Nouvelle")==="Nouvelle").length;
+  confirmedOrders.textContent=a.filter(x=>x.status==="Confirmée").length;
+  deliveredOrders.textContent=a.filter(x=>x.status==="Livrée").length;
+  if(!a.length){list.innerHTML='<div class="empty">📭 Aucune commande trouvée dans orders.</div>';return}
+  list.innerHTML=a.map(o=>`
+   <div class="order-card">
+    <div class="order-head"><div><h3>📦 ${esc(o.productName||"Produit")}</h3><div class="order-id">ID: ${esc(o.id)}</div></div>
+    <select class="status-select" onchange="changeStatus('${esc(o.id)}',this.value)">${STATUS.map(s=>`<option ${s===(o.status||"Nouvelle")?"selected":""}>${s}</option>`).join("")}</select></div>
+    <div class="order-grid">
+     <div class="order-item"><strong>👤 NOM ET PRÉNOM</strong>${esc(((o.firstName||"")+" "+(o.lastName||"")).trim()||"—")}</div>
+     <div class="order-item"><strong>📞 TÉLÉPHONE</strong>${esc(o.phone||"—")}</div>
+     <div class="order-item"><strong>📍 WILAYA</strong>${esc(o.wilaya||"—")}</div>
+     <div class="order-item"><strong>🏠 ADRESSE</strong>${esc(o.address||"—")}</div>
+     <div class="order-item"><strong>👟 PRODUIT</strong>${esc(o.productName||"—")}</div>
+     <div class="order-item"><strong>📏 POINTURE</strong>${esc(o.size||"—")}</div>
+     <div class="order-item"><strong>💰 PRIX</strong>${money(o.price)}</div>
+     <div class="order-item"><strong>📅 DATE</strong>${date(o.createdAt)}</div>
+    </div>
+    <button class="delete" onclick="deleteOrder('${esc(o.id)}')">🗑️ SUPPRIMER LA COMMANDE</button>
+   </div>`).join("");
+ }catch(e){
+  list.innerHTML='<div class="error">❌ Erreur de lecture Firestore :<br>'+esc(e.message)+'<br><br>Si tu vois "Missing or insufficient permissions", il faut corriger les règles Firestore.</div>';
+ }
+}
+async function changeStatus(id,status){try{await db.collection("orders").doc(id).update({status,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});await loadOrders()}catch(e){alert("❌ "+e.message)}}
+async function deleteOrder(id){if(!confirm("Supprimer cette commande définitivement ?"))return;try{await db.collection("orders").doc(id).delete();await loadOrders()}catch(e){alert("❌ "+e.message)}}
+</script>
+</body></html>
