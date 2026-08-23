@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KAMLAND DZ - Administration</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f5f5;color:#111}
+header{background:#111;color:#fff;padding:20px;text-align:center;border-bottom:3px solid #d8a928}
+.container{max-width:650px;margin:30px auto;padding:20px}.box{background:#fff;padding:25px;border-radius:15px;box-shadow:0 5px 20px #0002}
+h1{margin:0 0 5px}h2{margin-top:0}label{display:block;margin-top:15px;font-weight:bold}
+input,select{width:100%;padding:12px;margin-top:6px;border:1px solid #ddd;border-radius:8px;font-size:16px}
+.photo{margin-top:12px;padding:12px;background:#fafafa;border:1px solid #eee;border-radius:10px}
+.photo-title{font-size:14px;font-weight:bold}.preview{width:100%;height:150px;object-fit:contain;margin-top:8px;border-radius:10px;background:#eee;display:none}
+.progress-wrap{display:none;margin-top:8px}.progress{height:8px;background:#ddd;border-radius:8px;overflow:hidden}
+.progress-bar{height:100%;width:0;background:#20c76a;transition:width .2s}.progress-text{font-size:12px;color:#555;margin-top:4px;text-align:center}
+.sizes{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.sizes input{width:80px}
+button{width:100%;margin-top:22px;padding:14px;border:0;border-radius:9px;background:#20c76a;color:#fff;font-size:17px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.6}.logout{background:#d62828;margin-top:10px}.login-button{background:#111}
+.user-info{background:#f1f1f1;padding:10px;border-radius:8px;margin-bottom:15px;font-size:14px}
+#adminPanel{display:none}#message,#loginMessage{margin-top:15px;text-align:center;font-weight:bold}
+.note,.upload-status{font-size:13px;color:#666;margin-top:8px}.upload-status{text-align:center}
+</style>
+</head>
+<body>
+<header><h1>KAMLAND DZ</h1><div>Administration</div></header>
+<div class="container">
+
+<div class="box" id="loginPanel">
+<h2>🔐 Connexion administrateur</h2>
+<label>Adresse e-mail</label>
+<input id="loginEmail" type="email" placeholder="Votre adresse e-mail">
+<label>Mot de passe</label>
+<input id="loginPassword" type="password" placeholder="Votre mot de passe">
+<button class="login-button" onclick="loginAdmin()">🔐 SE CONNECTER</button>
+<div id="loginMessage"></div>
+</div>
+
+<div class="box" id="adminPanel">
+<h2>➕ Ajouter un produit</h2>
+<div class="user-info">👤 Administrateur connecté<br><span id="adminEmail"></span></div>
+<button class="logout" onclick="logoutAdmin()">🚪 SE DÉCONNECTER</button>
+
+<label>Marque</label>
+<select id="brand">
+<option value="">Choisir une marque</option>
+<option>Adidas</option><option>Nike</option><option>Reebok</option>
+<option>The North Face</option><option>Autre</option>
+</select>
+
+<label>Nom du produit</label>
+<input id="name" placeholder="Ex : Nike Air Max">
+
+<label>Prix (DA)</label>
+<input id="price" type="number" placeholder="Ex : 15000">
+
+<label>Photos du produit — jusqu'à 6 photos</label>
+
+<div id="photos"></div>
+
+<div class="note">
+📌 Sélectionne les photos directement depuis ton téléphone.
+La photo 1 est obligatoire et devient l'image principale.
+Les photos sont envoyées vers Firebase Storage puis enregistrées dans Firestore.
+</div>
+
+<label>Pointures</label>
+<div class="sizes">
+<input id="size1" type="number" step="0.5" placeholder="40">
+<input id="size2" type="number" step="0.5" placeholder="41">
+<input id="size3" type="number" step="0.5" placeholder="42">
+<input id="size4" type="number" step="0.5" placeholder="43">
+<input id="size5" type="number" step="0.5" placeholder="44">
+<input id="size6" type="number" step="0.5" placeholder="45">
+</div>
+
+<button id="addButton" onclick="addProduct()">➕ AJOUTER LE PRODUIT</button>
+<div id="message"></div>
+</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+<script>
+const firebaseConfig={
+apiKey:"AIzaSyAE5HUTFnWp3NJ-c4cMxq3014XjK7nxetc",
+authDomain:"kamland-dz.firebaseapp.com",
+projectId:"kamland-dz",
+storageBucket:"kamland-dz.firebasestorage.app",
+messagingSenderId:"821915710530",
+appId:"1:821915710530:web:4b6734b44c62f18f88a9db",
+measurementId:"G-71TMDK1LRC"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth=firebase.auth();
+const db=firebase.firestore();
+const storage=firebase.storage();
+const ADMIN_UID="O8N1eA6S3DMJDb95TXGx9twUos53";
+
+const $=id=>document.getElementById(id);
+
+for(let i=1;i<=6;i++){
+const div=document.createElement("div");
+div.className="photo";
+div.innerHTML=`
+<div class="photo-title">📸 Photo ${i}${i===1?" (principale) *":""}</div>
+<input id="image${i}" type="file" accept="image/*">
+<img id="preview${i}" class="preview">
+<div id="status${i}" class="upload-status"></div>
+<div id="wrap${i}" class="progress-wrap">
+<div class="progress"><div id="bar${i}" class="progress-bar"></div></div>
+<div id="text${i}" class="progress-text">0%</div>
+</div>`;
+$("photos").appendChild(div);
+
+$("image"+i).addEventListener("change",function(){
+const file=this.files[0];
+const preview=$("preview"+i);
+const status=$("status"+i);
+if(!file){
+preview.style.display="none";
+status.textContent="";
+return;
+}
+if(!file.type.startsWith("image/")){
+this.value="";
+preview.style.display="none";
+status.style.color="red";
+status.textContent="❌ Sélectionne une image.";
+return;
+}
+preview.src=URL.createObjectURL(file);
+preview.style.display="block";
+status.style.color="#555";
+status.textContent="✅ Photo sélectionnée";
+});
+}
+
+auth.onAuthStateChanged(user=>{
+if(user){
+if(user.uid!==ADMIN_UID){
+auth.signOut();
+$("loginMessage").style.color="red";
+$("loginMessage").textContent="❌ Ce compte n'est pas autorisé.";
+return;
+}
+$("loginPanel").style.display="none";
+$("adminPanel").style.display="block";
+$("adminEmail").textContent=user.email||"";
+}else{
+$("loginPanel").style.display="block";
+$("adminPanel").style.display="none";
+}
+});
+
+async function loginAdmin(){
+const email=$("loginEmail").value.trim();
+const password=$("loginPassword").value;
+
+if(!email||!password){
+$("loginMessage").style.color="red";
+$("loginMessage").textContent="⚠️ Entre ton e-mail et ton mot de passe.";
+return;
+}
+
+$("loginMessage").style.color="#555";
+$("loginMessage").textContent="⏳ Connexion en cours...";
+
+try{
+await auth.signInWithEmailAndPassword(email,password);
+$("loginMessage").textContent="";
+}catch(e){
+$("loginMessage").style.color="red";
+$("loginMessage").textContent=e.code==="auth/invalid-credential"
+?"❌ E-mail ou mot de passe incorrect."
+:"❌ Erreur : "+e.message;
+}
+}
+
+async function logoutAdmin(){
+await auth.signOut();
+}
+
+function uploadPhoto(file,index,productId){
+return new Promise((resolve,reject)=>{
+const extension=(file.name.split(".").pop()||"jpg")
+.toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
+
+const path="products/"+productId+"/photo"+index+"_"+Date.now()+"."+extension;
+const ref=storage.ref().child(path);
+const task=ref.put(file);
+
+const wrap=$("wrap"+index);
+const bar=$("bar"+index);
+const text=$("text"+index);
+const status=$("status"+index);
+
+wrap.style.display="block";
+status.style.color="#555";
+status.textContent="⬆️ Envoi de la photo "+index+"...";
+
+task.on("state_changed",
+snapshot=>{
+const percent=Math.round(
+snapshot.bytesTransferred/snapshot.totalBytes*100
+);
+bar.style.width=percent+"%";
+text.textContent=percent+"%";
+},
+error=>{
+status.style.color="red";
+status.textContent="❌ Erreur d'envoi : "+error.message;
+reject(error);
+},
+async()=>{
+try{
+const url=await task.snapshot.ref.getDownloadURL();
+bar.style.width="100%";
+text.textContent="100%";
+status.style.color="green";
+status.textContent="✅ Photo "+index+" envoyée";
+resolve(url);
+}catch(error){
+reject(error);
+}
+});
+});
+}
+
+async function addProduct(){
+
+const user=auth.currentUser;
+
+if(!user||user.uid!==ADMIN_UID){
+$("message").style.color="red";
+$("message").textContent="❌ Accès administrateur refusé.";
+return;
+}
+
+const brand=$("brand").value;
+const name=$("name").value.trim();
+const price=Number($("price").value);
+
+const sizes=[];
+const files=[];
+
+for(let i=1;i<=6;i++){
+
+const file=$("image"+i).files[0];
+
+if(file){
+files.push({index:i,file:file});
+}
+
+const size=$("size"+i).value;
+
+if(size!==""){
+sizes.push(Number(size));
+}
+}
+
+if(!brand||!name||!price||!files.length||!sizes.length){
+$("message").style.color="red";
+$("message").textContent=
+"⚠️ Remplis la marque, le nom, le prix, au moins une photo et les pointures.";
+return;
+}
+
+if(!files.some(item=>item.index===1)){
+$("message").style.color="red";
+$("message").textContent="⚠️ La photo 1 est obligatoire.";
+return;
+}
+
+$("addButton").disabled=true;
+$("message").style.color="#555";
+$("message").textContent="⏳ Envoi des photos en cours...";
+
+try{
+
+const productRef=db.collection("products").doc();
+const images=[];
+
+for(const item of files){
+const url=await uploadPhoto(
+item.file,
+item.index,
+productRef.id
+);
+images[item.index-1]=url;
+}
+
+const cleanImages=images.filter(Boolean);
+
+await productRef.set({
+brand:brand,
+name:name,
+price:price,
+images:cleanImages,
+image:cleanImages[0],
+sizes:sizes,
+createdAt:firebase.firestore.FieldValue.serverTimestamp()
+});
+
+$("message").style.color="green";
+$("message").textContent="✅ Produit ajouté avec succès !";
+
+$("brand").value="";
+$("name").value="";
+$("price").value="";
+
+for(let i=1;i<=6;i++){
+$("image"+i).value="";
+$("preview"+i).style.display="none";
+$("status"+i).textContent="";
+$("wrap"+i).style.display="none";
+$("bar"+i).style.width="0%";
+$("text"+i).textContent="0%";
+$("size"+i).value="";
+}
+
+}catch(e){
+
+console.error(e);
+$("message").style.color="red";
+$("message").textContent="❌ Erreur Firebase : "+e.message;
+
+}finally{
+
+$("addButton").disabled=false;
+
+}
+}
+
+$("loginPassword").addEventListener("keydown",e=>{
+if(e.key==="Enter")loginAdmin();
+});
+</script>
+</body>
+</html>
