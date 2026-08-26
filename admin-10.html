@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KAMLAND DZ - Administration</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f5f5;color:#111}
+header{background:#111;color:#fff;padding:20px;text-align:center;border-bottom:3px solid #d8a928}
+.container{max-width:700px;margin:30px auto;padding:20px}.box{background:#fff;padding:25px;border-radius:15px;box-shadow:0 5px 20px #0002;margin-bottom:20px}
+label{display:block;margin-top:15px;font-weight:bold}input,select{width:100%;padding:12px;margin-top:6px;border:1px solid #ddd;border-radius:8px;font-size:16px}
+.photo{margin-top:10px}.preview{width:100%;height:130px;object-fit:contain;margin-top:7px;border-radius:10px;background:#eee;display:none}
+.sizes{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:10px}
+.size-check{display:flex;align-items:center;justify-content:center;background:#f1f1f1;border:1px solid #ddd;border-radius:8px;padding:10px 4px;cursor:pointer;font-weight:bold;user-select:none;margin:0}
+.size-check input{width:auto;margin:0 5px 0 0;padding:0;cursor:pointer}
+.size-check:has(input:checked){background:#20c76a;color:#fff;border-color:#20c76a}
+button{width:100%;margin-top:22px;padding:14px;border:0;border-radius:9px;background:#20c76a;color:#fff;font-size:17px;font-weight:bold;cursor:pointer}
+.logout,.delete-order{background:#d62828}#adminPanel{display:none}#message,#loginMessage{text-align:center;font-weight:bold;margin-top:15px}.note{font-size:13px;color:#666;margin-top:8px}
+.orders-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:15px}.orders-header h2{margin:0}
+.order-count{background:#20c76a;color:#fff;border-radius:20px;padding:6px 12px;font-weight:bold}.order{background:#f8f8f8;border:1px solid #ddd;border-radius:13px;padding:16px;margin-bottom:14px}
+.order-title{font-size:18px;font-weight:bold;margin-bottom:10px}.order p{margin:7px 0;line-height:1.4}.order-status{display:inline-block;background:#20c76a;color:#fff;padding:5px 10px;border-radius:20px;font-size:12px;font-weight:bold}
+.delete-order{font-size:14px;padding:11px;margin-top:12px}.empty{text-align:center;color:#777;padding:20px 5px}.refresh{background:#111;font-size:14px;padding:10px;margin-top:0;margin-bottom:15px}
+hr{border:0;border-top:1px solid #ddd;margin:15px 0}.success{color:#16803c}.error{color:#c62828}
+@media(max-width:500px){.sizes{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header><h1>KAMLAND DZ</h1><div>Administration</div></header>
+<div class="container">
+
+<div class="box" id="loginPanel">
+<h2>🔐 Connexion administrateur</h2>
+<label>Adresse e-mail</label><input id="loginEmail" type="email" autocomplete="username">
+<label>Mot de passe</label><input id="loginPassword" type="password" autocomplete="current-password">
+<button id="loginBtn" onclick="loginAdmin()">🔐 SE CONNECTER</button>
+<div id="loginMessage"></div>
+</div>
+
+<div id="adminPanel">
+<div class="box">
+<h2>➕ Ajouter un produit</h2>
+<div>👤 Administrateur connecté<br><span id="adminEmail"></span></div>
+<button class="logout" onclick="logoutAdmin()">🚪 SE DÉCONNECTER</button>
+
+<label>Marque</label>
+<select id="brand"><option value="">Choisir une marque</option><option>Adidas</option><option>Nike</option><option>Reebok</option><option>The North Face</option><option>Autre</option></select>
+
+<label>Nom du produit</label><input id="name" placeholder="Ex : Nike Air Max">
+<label>Prix (DA)</label><input id="price" type="number" placeholder="Ex : 15000">
+
+<label>Photos — liens directs</label><div id="photos"></div>
+<div class="note">Aucun Firebase Storage. Colle des liens directs. La photo 1 est principale.</div>
+
+<label>Pointures disponibles</label>
+<div class="sizes" id="sizeList"></div>
+<div class="note">Coche toutes les pointures disponibles. De 20 à 46, avec les demi-pointures.</div>
+
+<button onclick="addProduct()">➕ AJOUTER LE PRODUIT</button><div id="message"></div>
+</div>
+
+<div class="box">
+<div class="orders-header"><h2>📦 Commandes</h2><span class="order-count" id="orderCount">0</span></div>
+<button class="refresh" onclick="loadOrders()">🔄 ACTUALISER LES COMMANDES</button>
+<div id="orders"><div class="empty">⏳ Chargement des commandes...</div></div>
+</div>
+</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig={
+ apiKey:"AIzaSyAE5HUTFnWp3NJ-c4cMxq3014XjK7nxetc",
+ authDomain:"kamland-dz.firebaseapp.com",
+ projectId:"kamland-dz",
+ storageBucket:"kamland-dz.firebasestorage.app",
+ messagingSenderId:"821915710530",
+ appId:"1:821915710530:web:4b6734b44c62f18f88a9db",
+ measurementId:"G-71TMDK1LRC"
+};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(),db=firebase.firestore();
+const ADMIN_UID="O8N1eA6S3DMJDb95TXGx9twUos53";
+const g=id=>document.getElementById(id);
+
+// Génération des pointures de 20 à 46 avec demi-pointures
+const sizeList=g("sizeList");
+for(let n=20;n<=46;n++){
+  [0,0.5].forEach(dec=>{
+    const size=n+dec;
+    if(size>46)return;
+    const label=document.createElement("label");
+    label.className="size-check";
+    label.innerHTML='<input type="checkbox" value="'+size+'">'+size.toFixed(dec===0?0:1);
+    sizeList.appendChild(label);
+  });
+}
+
+// 6 champs de liens directs
+for(let i=1;i<=6;i++){
+ g("photos").insertAdjacentHTML("beforeend",'<div class="photo"><b>📸 Photo '+i+(i===1?' (principale) *':'')+'</b><input id="image'+i+'" placeholder="https://i.ibb.co/..."><img id="preview'+i+'" class="preview"></div>');
+ g("image"+i).oninput=function(){
+  const p=g("preview"+i);p.src=this.value.trim();p.style.display=this.value.trim()?"block":"none";
+ };
+}
+
+auth.onAuthStateChanged(async user=>{
+ if(user){
+  if(user.uid===ADMIN_UID){
+   g("loginPanel").style.display="none";g("adminPanel").style.display="block";g("adminEmail").textContent=user.email||"";
+   await loadOrders();
+  }else{
+   await auth.signOut();
+   g("loginPanel").style.display="block";g("adminPanel").style.display="none";
+   g("loginMessage").className="error";
+   g("loginMessage").textContent="❌ Ce compte n'est pas autorisé comme administrateur.";
+  }
+ }else{
+  g("loginPanel").style.display="block";g("adminPanel").style.display="none";
+ }
+});
+
+async function loginAdmin(){
+ const email=g("loginEmail").value.trim(),password=g("loginPassword").value;
+ const msg=g("loginMessage"),btn=g("loginBtn");
+ msg.className="";msg.textContent="";
+ if(!email||!password){msg.className="error";msg.textContent="⚠️ Entre ton e-mail et ton mot de passe.";return}
+ btn.disabled=true;btn.textContent="⏳ CONNEXION...";
+ try{
+  const result=await auth.signInWithEmailAndPassword(email,password);
+  if(result.user.uid!==ADMIN_UID){
+   await auth.signOut();
+   throw new Error("Ce compte Firebase n'est pas le compte administrateur autorisé. Vérifie l'UID administrateur.");
+  }
+ }catch(e){
+  console.error(e);
+  let t=e.message||"Erreur de connexion";
+  if(e.code==="auth/invalid-credential")t="E-mail ou mot de passe incorrect.";
+  if(e.code==="auth/user-not-found")t="Aucun compte Firebase trouvé avec cet e-mail.";
+  if(e.code==="auth/wrong-password")t="Mot de passe incorrect.";
+  if(e.code==="auth/invalid-email")t="Adresse e-mail invalide.";
+  if(e.code==="auth/operation-not-allowed")t="La connexion E-mail/Mot de passe n'est pas activée dans Firebase Authentication.";
+  if(e.code==="auth/too-many-requests")t="Trop de tentatives. Réessaie plus tard.";
+  msg.className="error";msg.textContent="❌ "+t;
+ }finally{btn.disabled=false;btn.textContent="🔐 SE CONNECTER"}
+}
+
+async function logoutAdmin(){await auth.signOut()}
+
+async function addProduct(){
+ const u=auth.currentUser;
+ if(!u||u.uid!==ADMIN_UID)return;
+
+ let images=[],sizes=[];
+ for(let i=1;i<=6;i++){
+  const x=g("image"+i).value.trim();
+  if(x)images.push(x);
+ }
+
+ document.querySelectorAll('#sizeList input[type="checkbox"]:checked')
+ .forEach(x=>sizes.push(Number(x.value)));
+
+ const price=Number(g("price").value);
+
+ if(!g("brand").value||!g("name").value.trim()||!price||!images.length||!sizes.length){
+  g("message").className="error";
+  g("message").textContent="⚠️ Remplis les champs obligatoires et sélectionne au moins une pointure.";
+  return;
+ }
+
+ try{
+  await db.collection("products").add({
+   brand:g("brand").value,
+   name:g("name").value.trim(),
+   price,
+   images,
+   image:images[0],
+   sizes,
+   createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  g("message").className="success";
+  g("message").textContent="✅ Produit ajouté avec succès !";
+
+  // Nettoyage du formulaire
+  g("brand").value="";
+  g("name").value="";
+  g("price").value="";
+  for(let i=1;i<=6;i++){
+   g("image"+i).value="";
+   g("preview"+i).src="";
+   g("preview"+i).style.display="none";
+  }
+  document.querySelectorAll('#sizeList input[type="checkbox"]').forEach(x=>x.checked=false);
+
+ }catch(e){
+  console.error(e);
+  g("message").className="error";
+  g("message").textContent="❌ "+e.message;
+ }
+}
+
+async function loadOrders(){
+ const c=g("orders");
+ c.innerHTML='<div class="empty">⏳ Chargement des commandes...</div>';
+ try{
+  const snap=await db.collection("orders").orderBy("createdAt","desc").get();
+  g("orderCount").textContent=snap.size;
+
+  if(snap.empty){
+   c.innerHTML='<div class="empty">📭 Aucune commande pour le moment.</div>';
+   return;
+  }
+
+  c.innerHTML="";
+  snap.forEach(doc=>{
+   const o=doc.data(),div=document.createElement("div");
+   div.className="order";
+   const name=((o.firstName||"")+" "+(o.lastName||"")).trim()||"Client";
+   const date=o.createdAt&&o.createdAt.toDate?o.createdAt.toDate().toLocaleString("fr-FR"):"En attente";
+   const size=o.size!==undefined&&o.size!==null&&o.size!==""?String(o.size):"Non indiquée";
+
+   div.innerHTML='<div class="order-title">🛍️ '+esc(o.productName||"Produit")+'</div><span class="order-status">'+esc(o.status||"Nouvelle")+'</span><hr>'+
+   '<p><b>👤 Client :</b> '+esc(name)+'</p><p><b>📞 Téléphone :</b> '+esc(o.phone||"Non indiqué")+'</p>'+
+   '<p><b>📍 Wilaya :</b> '+esc(o.wilaya||"Non indiquée")+'</p><p><b>🏠 Adresse :</b> '+esc(o.address||"Non indiquée")+'</p>'+
+   '<p><b>🏷️ Marque :</b> '+esc(o.brand||"")+'</p><p><b>📏 Pointure :</b> '+esc(size)+'</p>'+
+   '<p><b>💰 Prix :</b> '+Number(o.price||0).toLocaleString("fr-FR")+' DA</p><p><b>🕐 Date :</b> '+esc(date)+'</p>'+
+   '<button class="delete-order" onclick="deleteOrder(\''+doc.id+'\')">🗑️ SUPPRIMER LA COMMANDE</button>';
+
+   c.appendChild(div);
+  });
+ }catch(e){
+  console.error(e);
+  g("orderCount").textContent="0";
+  c.innerHTML='<div class="empty error">❌ Impossible de charger les commandes.<br><br>'+esc(e.message)+'</div>';
+ }
+}
+
+async function deleteOrder(id){
+ if(!confirm("Voulez-vous vraiment supprimer cette commande ?"))return;
+ try{
+  await db.collection("orders").doc(id).delete();
+  await loadOrders();
+ }catch(e){alert("❌ "+e.message)}
+}
+
+function esc(v){
+ return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))
+}
+</script>
+</body>
+</html>
